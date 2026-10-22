@@ -109,9 +109,9 @@ before the current split started. All cutoffs are chosen after the split start.
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Revoke the 2024 leaked credentials; apply for a Riot personal key | Owner: Matias |
-| 1 | Foundation: repo, docs, tooling, CI | In progress |
-| 2 | Riot client and `collect` (FR1) | — |
+| 0 | Revoke the 2024 leaked credentials; apply for a Riot personal key | Done |
+| 1 | Foundation: repo, docs, tooling, CI | Done |
+| 2 | Riot client and `collect` (FR1) | In progress |
 | 3 | Point-in-time dataset, leak-guard test, EDA (FR2) | — |
 | 4a | Classical models, evaluation, model card (FR3) | — |
 | 4b | Neural nets on Colab (FR3b) | — |
