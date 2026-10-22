@@ -1,0 +1,42 @@
+# `lolret.dataset`: point-in-time examples
+
+Turns a run's store into one row per (player, cutoff T): features, `eligible` and `churned`.
+Reads only stored responses, never the API, and only players whose collection finished.
+
+**Status:** done (Phase 3), verified on the pilot. The EDA notebook waits for run `v1`.
+
+## Files
+
+- `extract.py`: `StoredOnly` (a `RiotEndpoints` that reads the store, so keys match collection
+  exactly), `participant_row`, and the `players`, `buckets` and `matches` tables (naive UTC).
+- `features.sql`: every feature and the label, in one DuckDB query. **The definitions live
+  here**, documented column by column in `docs/features.md`.
+- `build.py`: `build_examples` (tables → `examples` in a DuckDB connection) and
+  `build_dataset` → `data/processed/<run>/dataset.duckdb` + `examples.parquet`, rebuilt from
+  scratch every time.
+
+## Rules that must not break (ADR 0003, ADR 0006)
+
+| Part | May read |
+|---|---|
+| Activity counts | buckets that end at or before T (games counted by start time) |
+| Match features | games that ended at or before T |
+| Label | only (T, T + 28 days]; NULL if not fully observed |
+| Eligibility | at least one game in the 28 days before T |
+| Never | ladder fields (wins, losses, LP, flags) as features |
+
+## Adding or changing a feature
+
+1. Change `features.sql`, keeping the timing rules above.
+2. Add the column to `docs/features.md`.
+3. Extend the hand-built scenario in `tests/test_dataset.py` with its expected value.
+4. Run the leak guard, then prove it still bites: temporarily make the new feature read past T
+   and check the test fails.
+
+NULLs are deliberate (for example, no match features when the only recent game was still
+running at T). Imputation belongs to modelling, not here.
+
+## Tests
+
+`tests/test_dataset.py`: the scenario test, the leak-guard property test (random data,
+5 seeds, 3 cutoffs), extraction from a store, and the build outputs.
