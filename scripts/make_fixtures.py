@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from lolret.collect.store import decode_body
+
 FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
 NAME_KEYS = {"riotIdGameName", "riotIdName", "summonerName", "gameName"}
 TAG_KEYS = {"riotIdTagline", "tagLine"}
@@ -63,13 +65,13 @@ class Anonymiser:
 
 def first_body(db: sqlite3.Connection, endpoint: str) -> Any:
     row = db.execute(
-        "SELECT body FROM responses WHERE endpoint = ? AND status = 200 AND body NOT IN ('[]')"
-        " ORDER BY key LIMIT 1",
-        (endpoint,),
-    ).fetchone()
-    if row is None:
-        sys.exit(f"no stored {endpoint} response to build a fixture from")
-    return json.loads(row[0])
+        "SELECT body FROM responses WHERE endpoint = ? AND status = 200 ORDER BY key", (endpoint,)
+    )
+    for (stored,) in row:
+        body = decode_body(stored)
+        if body:  # skip empty match-ID lists
+            return body
+    sys.exit(f"no stored {endpoint} response to build a fixture from")
 
 
 def main(db_path: Path) -> None:

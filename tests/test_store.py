@@ -1,3 +1,5 @@
+import json
+import sqlite3
 from pathlib import Path
 
 from lolret.collect.cache import cache_key
@@ -13,6 +15,21 @@ def test_responses_round_trip_including_404(tmp_path: Path) -> None:
     assert store.get("k200") == RiotResponse(200, {"a": [1, 2]})
     assert store.get("k404") == RiotResponse(404, None)
     assert store.get("missing") is None
+
+
+def test_bodies_are_compressed_and_legacy_text_still_loads(tmp_path: Path) -> None:
+    path = tmp_path / "run.sqlite"
+    store = Store(path)
+    body = {"info": {"participants": [{"kills": 3}] * 10}}
+    store.put("new", "match", RiotResponse(200, body))
+    with sqlite3.connect(path) as db:
+        db.execute("INSERT INTO responses VALUES ('old', 'match', 200, '{\"a\": 1}', 'then')")
+        stored = db.execute("SELECT body FROM responses WHERE key = 'new'").fetchone()[0]
+
+    assert isinstance(stored, bytes)
+    assert len(stored) < len(json.dumps(body))
+    assert store.get("new") == RiotResponse(200, body)
+    assert store.get("old") == RiotResponse(200, {"a": 1})
 
 
 def test_a_success_clears_an_earlier_failure(tmp_path: Path) -> None:

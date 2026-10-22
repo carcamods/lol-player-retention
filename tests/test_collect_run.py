@@ -74,12 +74,12 @@ async def no_sleep(_: float) -> None:
     return None
 
 
-async def run(store: Store, max_attempts: int = 5) -> RunResult:
+async def run(store: Store, max_attempts: int = 5, cfg: CollectConfig = CONFIG) -> RunResult:
     async with httpx.AsyncClient() as http:
         client = RiotClient(
             "k", limits=[(10_000, 1.0)], http=http, max_attempts=max_attempts, sleep=no_sleep
         )
-        return await run_collection(CONFIG, store, client, now=NOW)
+        return await run_collection(cfg, store, client, now=NOW)
 
 
 @pytest.mark.anyio
@@ -132,6 +132,25 @@ async def test_sample_is_reproducible(fake_riot: respx.MockRouter, tmp_path: Pat
     await run(store_b)
 
     assert [p.puuid for p in store_a.players("na1")] == [p.puuid for p in store_b.players("na1")]
+
+
+@pytest.mark.anyio
+async def test_raising_the_target_keeps_existing_players_and_adds_more(
+    fake_riot: respx.MockRouter, tmp_path: Path
+) -> None:
+    store = Store(tmp_path / "run.sqlite")
+    await run(store)
+    first = {p.puuid for p in store.players("na1")}
+    calls_before = fake_riot["ids"].call_count
+
+    bigger = await run(store, cfg=CONFIG.model_copy(update={"players_per_division": 5}))
+
+    after = {p.puuid for p in store.players("na1")}
+    assert first < after
+    assert len(after) == 5
+    assert bigger.platforms[0].complete == 5
+    # Only the 2 new players' histories were requested.
+    assert fake_riot["ids"].call_count - calls_before == 2 * 20
 
 
 @pytest.mark.anyio

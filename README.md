@@ -85,7 +85,7 @@ uv run pre-commit run --all-files
 
 ```bash
 uv run lolret collect -c configs/collect-pilot.yaml   # pilot: 15 players, ~20 min
-uv run lolret collect -c configs/collect.yaml         # full run: ~6,000 players, days
+uv run lolret collect -c configs/collect.yaml         # full run: ~6,000 players, ~32 h, ~2 GB
 uv run lolret status  -c configs/collect.yaml         # progress, from another terminal
 ```
 

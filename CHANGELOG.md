@@ -18,6 +18,11 @@ Notable changes, newest first. Each entry says what changed and why.
 - `scripts/make_fixtures.py`: builds anonymised test fixtures from a run, refusing to write if
   any real identifier survives.
 - `RIOT_RATE_LIMITS` setting, for when a production key raises the limits.
+- Response bodies stored zlib-compressed: the pilot showed ~80 KB per match, which would have
+  meant ~13 GB for the full run; now ~2 GB.
+- Raising `players_per_division` tops up a run instead of being ignored.
+- Anonymised fixtures recorded from the pilot run, plus contract tests on the response fields
+  the dataset needs. Pilot results are in ADR 0005.
 
 ## [2026-10-22]
 

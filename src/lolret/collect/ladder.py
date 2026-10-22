@@ -52,7 +52,11 @@ async def last_page(riot: RiotEndpoints, platform: str, tier: str, division: str
 async def sample_division(
     riot: RiotEndpoints, cfg: CollectConfig, platform: str, tier: str, division: str
 ) -> list[str]:
-    """Randomly chosen PUUIDs from one division."""
+    """Randomly chosen PUUIDs from one division.
+
+    The pool is shuffled once and the first `players_per_division` are taken, so raising that
+    number later keeps every player already sampled and only adds new ones.
+    """
     # Sampling, not cryptography: a seeded PRNG is what makes the sample reproducible.
     rng = random.Random(f"{cfg.seed}:{platform}:{tier}:{division}")  # noqa: S311
     pages_total = await last_page(riot, platform, tier, division)
@@ -63,4 +67,6 @@ async def sample_division(
     for page in pages:
         for entry in await _page(riot, platform, tier, division, page):
             pool.setdefault(entry.puuid)
-    return rng.sample(list(pool), min(cfg.players_per_division, len(pool)))
+    order = list(pool)
+    rng.shuffle(order)
+    return order[: cfg.players_per_division]

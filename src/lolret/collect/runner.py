@@ -52,7 +52,8 @@ async def collect_platform(
     failed = 0
     for tier in cfg.tiers:
         for division in cfg.divisions:
-            if store.count_players(platform, tier, division):
+            # Below target: sample (again). Pages are cached, so a top-up only costs new pages.
+            if store.count_players(platform, tier, division) >= cfg.players_per_division:
                 continue
             try:
                 puuids = await sample_division(riot, cfg, platform, tier, division)
@@ -66,8 +67,11 @@ async def collect_platform(
                     exc,
                 )
                 continue
+            before = store.count_players(platform, tier, division)
             store.add_players(platform, tier, division, puuids)
-            log.info("[%s] sampled %d players from %s %s", platform, len(puuids), tier, division)
+            added = store.count_players(platform, tier, division) - before
+            if added:
+                log.info("[%s] sampled %d players from %s %s", platform, added, tier, division)
 
     players = store.players(platform)
     todo = [p for p in players if not p.complete]

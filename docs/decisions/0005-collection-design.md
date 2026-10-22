@@ -55,3 +55,30 @@ A rejected key exits with code 1. Ctrl+C exits with 130. Progress is never lost.
   Phase 3 must use only matches that *ended* before T for features.
 - Ladder data is "now" data: `league-v4` fields other than the PUUID are never used as
   features (ADR 0003).
+- Bodies are stored zlib-compressed (a match is ~80 KB raw, ~11 KB compressed).
+- Sampling shuffles each division's pool once and takes the first N, so raising
+  `players_per_division` later keeps every sampled player and only adds new ones.
+
+## Pilot results (2026-10-22)
+
+`configs/collect-pilot.yaml`: 15 NA players (Silver II, Gold II, Emerald II), 3 cutoffs.
+
+| Measure | Result |
+|---|---|
+| Outcome | 15/15 players complete, 0 failures, 0 rate-limit errors |
+| Requests | 768 in 14 min: the 100-per-2-minutes limit is the bottleneck, as designed |
+| Per player | 20 match-ID + 27.4 match-detail requests = 47.4 |
+| Per division (ladder) | ~19 requests with 2 pages; ~23 with 6 |
+| Storage | ~11 KB per match compressed |
+| Churned at the cutoffs | 6/15, 5/15, 7/15 (about 40%) |
+| No game in the 8 weeks before the cutoff | 12 of 45 player-cutoff pairs |
+
+**Full run estimate** (`configs/collect.yaml`, 2,016 players per platform): ~650 ladder requests
+(~13 min) then ~95,600 match requests (~32 h) per platform. The three platforms run in
+parallel, so about **32 hours** in total, and about **2 GB** of disk.
+
+**For Phase 3:** about a quarter of player-cutoff pairs were already inactive before the cutoff.
+Predicting churn for someone who has already stopped is trivial and inflates metrics, so
+Phase 3 must decide the eligible population (for example, at least one game in the 28 days
+before T). At the pilot's rate that leaves roughly 13k of the ~18k examples. If that proves too
+few, raise `players_per_division` and re-run: only new players are fetched.

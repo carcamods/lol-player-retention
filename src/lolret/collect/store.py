@@ -3,14 +3,19 @@
 SQLite (WAL mode) rather than DuckDB because a run is a long, write-heavy job: every response
 is committed as it arrives, so an interrupted run loses nothing, and `lolret status` can read
 the file while `lolret collect` is writing to it. Phase 3 reads this file for analysis.
+
+Bodies are stored as zlib-compressed JSON: a match is ~80 KB raw but ~11 KB compressed, which
+keeps a full run at ~2 GB instead of ~13 GB.
 """
 
 import json
 import sqlite3
+import zlib
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from lolret.riot.client import RiotResponse
 
@@ -19,7 +24,7 @@ CREATE TABLE IF NOT EXISTS responses (
     key        TEXT PRIMARY KEY,   -- routing + path + sorted query string
     endpoint   TEXT NOT NULL,      -- league-entries | match-ids | match
     status     INTEGER NOT NULL,   -- 200 or 404
-    body       TEXT,               -- JSON; NULL for 404
+    body       BLOB,               -- zlib-compressed JSON; NULL for 404
     fetched_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS failures (
@@ -63,6 +68,17 @@ def _now() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
+def encode_body(body: Any) -> bytes:
+    return zlib.compress(json.dumps(body, separators=(",", ":")).encode("utf-8"))
+
+
+def decode_body(stored: bytes | str) -> Any:
+    """Decode a stored body. Plain-text JSON from runs made before compression still loads."""
+    if isinstance(stored, bytes):
+        return json.loads(zlib.decompress(stored))
+    return json.loads(stored)
+
+
 class Store:
     def __init__(self, path: Path, *, read_only: bool = False) -> None:
         self.path = path
@@ -87,10 +103,10 @@ class Store:
         if row is None:
             return None
         status, body = row
-        return RiotResponse(status, None if body is None else json.loads(body))
+        return RiotResponse(status, None if body is None else decode_body(body))
 
     def put(self, key: str, endpoint: str, response: RiotResponse) -> None:
-        body = None if response.body is None else json.dumps(response.body, separators=(",", ":"))
+        body = None if response.body is None else encode_body(response.body)
         with self._db:
             self._db.execute(
                 "INSERT OR REPLACE INTO responses VALUES (?, ?, ?, ?, ?)",

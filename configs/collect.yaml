@@ -1,6 +1,7 @@
 # Full collection run. Design: docs/decisions/0005-collection-design.md
 # Run:    uv run lolret collect -c configs/collect.yaml
 # Watch:  uv run lolret status -c configs/collect.yaml   (from a second terminal)
+# Cost (measured by the pilot): ~47 requests per player, so ~32 h and ~2 GB for this config.
 run_name: v1
 
 # One rate-limit budget per platform and per region, so platforms run in parallel.
