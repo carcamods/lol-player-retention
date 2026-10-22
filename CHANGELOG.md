@@ -2,6 +2,18 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-22] AGENTS.md instead of CLAUDE.md
+
+### Changed
+- Context files renamed from `CLAUDE.md` to `AGENTS.md` (root, `docs/`, `tests/`, `riot`,
+  `collect`, `dataset`). `AGENTS.md` is the open format most coding agents read, and Claude Code
+  reads it whenever no `CLAUDE.md` exists, so one set of files serves every tool (ADR 0009).
+- The root map now tells agents to read a module's `AGENTS.md` before changing code there,
+  because not every tool loads subfolder files by itself.
+
+### Added
+- README section "How this project is built": the AI-assisted workflow and the guards behind it.
+
 ## [2026-10-22] Layered repo memory for AI-assisted development
 
 ### Added

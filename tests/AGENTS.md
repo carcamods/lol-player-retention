@@ -19,7 +19,7 @@
 `test_dataset.py::test_leak_guard_features_only_see_data_before_the_cutoff` compares features
 from the full data with features from data truncated at each cutoff. Never weaken, skip or
 loosen it. When adding a feature, prove the guard still catches a leak by temporarily injecting
-one (see `src/lolret/dataset/CLAUDE.md`).
+one (see `src/lolret/dataset/AGENTS.md`).
 
 ## Where tests live
 

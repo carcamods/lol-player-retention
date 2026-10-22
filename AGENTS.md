@@ -5,9 +5,9 @@ Portfolio project: predicts whether a ranked League of Legends player stops play
 collection into SQLite, a DuckDB point-in-time dataset, classical and neural models, and a
 static Quarto site. The owner (Matias) reviews and merges every PR.
 
-This file is a map, loaded every session. Context for each module lives in that module's
-`CLAUDE.md` and loads only when you open files there, so read what the task needs, not the
-whole repo.
+This file is a map, read at the start of every session by Claude Code, Codex and other agents
+that use `AGENTS.md`. Each module has its own `AGENTS.md` with its context: read it before
+changing code in that folder. Read what the task needs, not the whole repo.
 
 ## Active work (updated 2026-10-22)
 
@@ -29,7 +29,7 @@ whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `CLAUDE.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `tests/`, `docs/` |
 
 ## Commands
 
@@ -56,9 +56,11 @@ uv run lolret build  -c configs/collect.yaml
 - **Git.** Work on a `type/short-description` branch and open a PR; never push to `main`,
   make the repo public or deploy. Conventional Commits. No AI attribution anywhere.
 - **Before committing:** the touched module's tests, then the full suite, mypy and pre-commit.
+- **Context files are `AGENTS.md`.** Never add a `CLAUDE.md`, `.claude/CLAUDE.md` or
+  `CLAUDE.local.md`: any of them makes Claude Code stop reading every `AGENTS.md` (ADR 0009).
 
 ## Ending a session
 
 Run `/checkpoint`: it logs decisions, updates the changelog, refreshes this file's "Active
-work" and the touched modules' `CLAUDE.md`, runs the checks and commits. Use `/adr` to record a
+work" and the touched modules' `AGENTS.md`, runs the checks and commits. Use `/adr` to record a
 decision as soon as it's made.

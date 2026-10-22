@@ -1,6 +1,7 @@
 # 0007: Layered repo memory for AI-assisted development
 
-**Status:** Accepted, 2026-10-22
+**Status:** Accepted, 2026-10-22. File names amended by [0009](0009-agents-md.md): the context
+files are now `AGENTS.md` instead of `CLAUDE.md`.
 
 ## Context
 
