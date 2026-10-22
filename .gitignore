@@ -1,0 +1,44 @@
+# Secrets: never committed. Copy .env.example to .env and fill it in locally.
+.env
+.env.*
+!.env.example
+
+# Data: raw API responses and processed datasets stay local.
+# Only the anonymised snapshot the site needs is published (site/data/).
+data/
+*.parquet
+*.duckdb
+*.duckdb.wal
+*.csv
+
+# Model artifacts are published as release assets, not committed.
+models/
+*.pt
+*.pkl
+*.joblib
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Tooling caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Quarto build output
+site/_site/
+site/.quarto/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
