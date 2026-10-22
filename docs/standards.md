@@ -101,4 +101,28 @@ Before a PR is merged:
   Added / Changed / Fixed / Removed.
 - `README.md`: update any section the change affects. The README describes the project as it
   is now, not as it was planned.
-- Significant decisions get a short ADR in `docs/decisions/` (context, decision, consequences).
+- Significant decisions get a short ADR in `docs/decisions/` (context, decision, consequences),
+  plus a row in the index in `docs/decisions/README.md`.
+- The `CLAUDE.md` of every module the change touched is still accurate.
+
+## Working with AI agents: layered repo memory
+
+This project is developed with an AI coding agent (Claude Code). The repo, not the chat, is the
+agent's memory, and context is layered so a session reads only what its task needs:
+
+| Layer | File | Loaded |
+|---|---|---|
+| Map | root `CLAUDE.md`: purpose, "Active work", where things live, rules that always apply | every session |
+| Module context | `src/lolret/<module>/CLAUDE.md`, `tests/CLAUDE.md`, `docs/CLAUDE.md`: purpose, status, rules that must not break, pitfalls, tests | only when files in that folder are opened |
+| Decisions | `docs/decisions/` with an index in `README.md` | on demand, one ADR at a time |
+| History | `CHANGELOG.md`, newest first | on demand, top entries only |
+| Checkpoint | `/checkpoint` and `/adr` commands in `.claude/commands/` | run by the developer |
+
+Why: a new session starts from the map instead of re-reading the codebase, which saves tokens
+and time. Module rules ("cache keys must stay stable", "features never read past the cutoff")
+are in front of the agent exactly when it edits that module, which keeps changes local and
+fixes specific. The end-of-session checkpoint keeps the layers current, because stale context
+is worse than none.
+
+Personal, machine-local notes (working style, temporary local state) stay out of git, in the
+agent's local memory or a git-ignored `.claude/settings.local.json`. See ADR 0007.

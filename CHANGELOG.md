@@ -2,6 +2,20 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-22] Layered repo memory for AI-assisted development
+
+### Added
+- Module context files (`CLAUDE.md` in `riot`, `collect`, `dataset`, `tests`, `docs`): purpose,
+  status, rules that must not break, pitfalls and tests. They load only when that folder is in
+  use, so sessions read what the task needs instead of the whole repo (ADR 0007).
+- ADR index (`docs/decisions/README.md`) with a template.
+- `/checkpoint` and `/adr` commands for ending a session and recording decisions.
+- "Working with AI agents" section in `docs/standards.md`.
+
+### Changed
+- Root `CLAUDE.md` rewritten as a short map: "Active work", where things live, rules that
+  always apply.
+
 ## [2026-10-22] Phase 3: point-in-time dataset
 
 ### Added
