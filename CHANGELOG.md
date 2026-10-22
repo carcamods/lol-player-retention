@@ -14,3 +14,5 @@ Notable changes, newest first. Each entry says what changed and why.
   full-history gitleaks scan.
 - Docs: requirements, engineering standards, and ADRs 0001–0004 (fresh repo, static snapshot
   site, point-in-time labels, neural nets on Colab).
+- `docs/riot-api-registration.md`: Riot key types and the personal-key application text,
+  kept for reuse in a later production-key application.

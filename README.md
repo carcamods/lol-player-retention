@@ -87,6 +87,7 @@ None yet. Collection is run manually.
 - [Requirements](docs/requirements.md): goal, audiences, requirements, roadmap
 - [Engineering standards](docs/standards.md)
 - [Decisions](docs/decisions/)
+- [Riot API registration](docs/riot-api-registration.md): key types and the application text
 - [Changelog](CHANGELOG.md)
 
 ## Known fragile points
