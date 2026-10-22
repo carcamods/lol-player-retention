@@ -2,6 +2,24 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-22] Phase 4a: classical models
+
+### Added
+- `lolret train -c configs/train.yaml`: trains a majority-class baseline, the recency rule,
+  logistic regression and LightGBM on a built dataset, and evaluates them on held-out players
+  at the latest cutoff. Output in `data/models/<dataset>/`: `models.json` and `lightgbm.txt`
+  (no pickles), `metrics.json`, `model_card.md` (ADR 0008).
+- Model selection (logistic-regression strength, LightGBM rounds) and Platt calibration use
+  player-grouped out-of-fold predictions inside training, so the test set is used only once.
+- 95% bootstrap intervals for PR-AUC, ROC-AUC, Brier score and log loss, plus a paired interval
+  for each model's PR-AUC gain over the recency rule. The model card says plainly whether a
+  model beats the baseline.
+- Feature importance from LightGBM's built-in TreeSHAP, and reliability bins for the
+  calibration plot.
+- Tests: the model's feature list must match `features.sql`, split properties, save and reload,
+  and a check that no player identifier reaches any output.
+- Dependencies: scikit-learn, LightGBM.
+
 ## [2026-10-22] AGENTS.md instead of CLAUDE.md
 
 ### Changed

@@ -50,4 +50,5 @@ the eligibility rule are in [ADR 0006](decisions/0006-eligible-population.md).
 | `last_session_games` | Games in the most recent session (a session ends after a break of more than an hour). |
 
 Missing values are deliberate: a player whose only recent game was still running at T has
-activity counts but no match features. Phase 4 decides how each model handles that.
+activity counts but no match features. LightGBM handles them natively; logistic regression
+imputes the training median and adds a missing-value indicator (ADR 0008).

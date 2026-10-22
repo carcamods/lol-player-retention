@@ -1,6 +1,6 @@
 """Command-line entry point: `lolret <command>`.
 
-Pipeline commands (train, export, predict) are added phase by phase.
+Pipeline commands (export, predict) are added phase by phase.
 """
 
 import asyncio
@@ -17,6 +17,8 @@ from lolret.collect.store import Store
 from lolret.config import Settings, get_settings
 from lolret.dataset.build import build_dataset
 from lolret.log import configure_logging, get_logger
+from lolret.model.config import load_train_config
+from lolret.model.train import InsufficientDataError, examples_path, train_and_evaluate
 from lolret.notify import notify_discord
 from lolret.riot.client import RiotAuthError, RiotClient
 from lolret.riot.ratelimit import parse_limits
@@ -28,6 +30,10 @@ ConfigOption = Annotated[
     Path, typer.Option("--config", "-c", help="Collection config (YAML).", exists=True)
 ]
 DEFAULT_COLLECT_CONFIG = Path("configs/collect.yaml")
+TrainConfigOption = Annotated[
+    Path, typer.Option("--config", "-c", help="Training config (YAML).", exists=True)
+]
+DEFAULT_TRAIN_CONFIG = Path("configs/train.yaml")
 
 EXIT_FAILED_REQUESTS = 2
 EXIT_INTERRUPTED = 130
@@ -165,3 +171,31 @@ def build(config: ConfigOption = DEFAULT_COLLECT_CONFIG) -> None:
         churn,
         summary.path.parent,
     )
+
+
+@app.command()
+def train(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
+    """Train the classical models on a built dataset and evaluate them on held-out players.
+
+    Writes models, metrics.json and model_card.md to data/models/<dataset>/.
+    """
+    settings = get_settings()
+    cfg = load_train_config(config)
+    source = examples_path(settings.data_dir, cfg.dataset)
+    if not source.exists():
+        log.error("No dataset '%s' at %s. Run `lolret build` first.", cfg.dataset, source)
+        raise typer.Exit(1)
+    try:
+        summary = train_and_evaluate(cfg, settings.data_dir)
+    except InsufficientDataError as exc:
+        log.error("Not enough data to train: %s.", exc)
+        raise typer.Exit(1) from None
+    for name, r in summary.test.items():
+        log.info(
+            "%-9s PR-AUC %s  ROC-AUC %s  Brier %.3f",
+            name,
+            "n/a" if r["pr_auc"] is None else f"{r['pr_auc']:.3f}",
+            "n/a" if r["roc_auc"] is None else f"{r['roc_auc']:.3f}",
+            r["brier"],
+        )
+    log.info("Models, metrics.json and model_card.md in %s", summary.out_dir)

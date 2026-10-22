@@ -11,14 +11,18 @@ changing code in that folder. Read what the task needs, not the whole repo.
 
 ## Active work (updated 2026-10-22)
 
-- **Done:** Phase 1 foundation, Phase 2 collection, Phase 3 dataset (`lolret build`).
-- **In progress:** collection run `v1` on the owner's machine, started 2026-10-22 18:17 UTC,
-  about 32 h. Check it with `lolret status -c configs/collect.yaml`. Never delete or rewrite
-  `data/`, and don't change `configs/collect.yaml` while the run is going.
-- **Next:** when the run finishes, `lolret build -c configs/collect.yaml`, then the EDA
-  notebook (rest of Phase 3), then Phase 4a classical models. Modelling can start earlier on
-  partial data: `build` only uses players whose collection finished.
-- **Later:** 4b neural nets on Colab, 4c forward test, 5 site and launch. See the roadmap.
+- **Done:** Phase 1 foundation, Phase 2 collection, Phase 3 dataset (`lolret build`), Phase 4a
+  pipeline (`lolret train`, ADR 0008; tested, run only on partial data so far).
+- **In progress:** collection run `v1` on the owner's machine, started 2026-10-22 18:17 UTC.
+  The runner estimates 21-27 h (KR is slowest, about 2026-10-23 21:30 UTC). Check it with
+  `lolret status -c configs/collect.yaml`. Never delete or rewrite `data/`, and don't
+  change `configs/collect.yaml` while the run is going.
+- **Next:** when the run finishes, `lolret build -c configs/collect.yaml`, then
+  `lolret train -c configs/train.yaml` for the first real results, then the EDA notebook (rest
+  of Phase 3). Check the churn rate by cutoff: on the first 122 players it was 37% at the
+  latest cutoff against 20-24% at the earlier two (only 54 rows).
+- **Later:** 4b neural nets on Colab (same split and `evaluate()` as 4a), 4c forward test,
+  5 site and launch. See the roadmap.
 
 ## Where things live (read on demand)
 
@@ -29,7 +33,7 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `tests/`, `docs/` |
 
 ## Commands
 
@@ -40,6 +44,7 @@ uv run mypy src tests                     # types (strict)
 uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
 uv run lolret status -c configs/collect.yaml
 uv run lolret build  -c configs/collect.yaml
+uv run lolret train  -c configs/train.yaml
 ```
 
 ## Rules that always apply

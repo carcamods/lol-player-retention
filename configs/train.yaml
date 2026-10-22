@@ -1,0 +1,24 @@
+# Classical models (Phase 4a). Design: docs/decisions/0008-classical-model-evaluation.md
+# Run:    uv run lolret train -c configs/train.yaml    (after `lolret build`)
+# Output: data/models/<dataset>/ (models.json, lightgbm.txt, metrics.json, model_card.md)
+dataset: v1                   # reads data/processed/v1/examples.parquet
+
+# Test set: this share of players, at the latest cutoff only. Training: the other players at
+# the earlier cutoffs. A player's side is fixed by a hash, so it doesn't change as data grows.
+test_fraction: 0.3
+cv_folds: 5                   # player-grouped folds inside training: model selection + calibration
+
+logreg_c: [0.01, 0.1, 1.0, 10.0]
+
+lightgbm:
+  learning_rate: 0.03
+  num_leaves: 15
+  min_child_samples: 40
+  feature_fraction: 0.8
+  bagging_fraction: 0.8
+  lambda_l2: 1.0
+  max_rounds: 2000
+  early_stopping_rounds: 100
+
+bootstrap: 1000               # resamples for the 95% intervals on the test set
+seed: 42

@@ -3,8 +3,9 @@
 Predicts whether a ranked **League of Legends** player will stop playing in the next
 **28 days**, using only what was knowable at prediction time.
 
-> **Status: Phase 3 of 6, dataset.** `lolret build` turns collected data into point-in-time
-> features and labels. The full collection run is in progress. See the [roadmap](docs/requirements.md#roadmap).
+> **Status: Phase 4 of 6, models.** `lolret train` trains and evaluates the baselines, logistic
+> regression and LightGBM. The first real results wait for the full collection run, which is in
+> progress. See the [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 
@@ -43,7 +44,8 @@ SQLite, so a stopped run resumes without re-requesting anything.
 ## Tech stack
 
 Python 3.12+ · uv · httpx (async) · pydantic · typer · SQLite · ruff · mypy · pytest + respx ·
-DuckDB + pyarrow · pre-commit + gitleaks · GitHub Actions. Later phases add LightGBM, SHAP, PyTorch and Quarto.
+DuckDB + pyarrow · scikit-learn · LightGBM · pre-commit + gitleaks · GitHub Actions. Later phases add
+PyTorch and Quarto.
 
 ## Setup
 
@@ -89,6 +91,16 @@ uv run lolret build -c configs/collect.yaml   # -> data/processed/v1/{dataset.du
 
 Features and labels are documented in [docs/features.md](docs/features.md).
 
+**Train and evaluate the classical models** (after `build`):
+
+```bash
+uv run lolret train -c configs/train.yaml   # -> data/models/v1/{models.json, lightgbm.txt, metrics.json, model_card.md}
+```
+
+The test set is 30% of players, held out completely, at the latest cutoff. Every metric comes
+with a 95% bootstrap interval, and the model card says whether each model beats the recency
+rule ("days since the last game"). Design: [ADR 0008](docs/decisions/0008-classical-model-evaluation.md).
+
 **Collect data** (needs `RIOT_API_KEY`):
 
 ```bash
@@ -100,7 +112,7 @@ uv run lolret status  -c configs/collect.yaml         # progress, from another t
 Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
 `1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
 
-Pipeline commands still to come: `train`, `train-nn`, `export`, `predict`.
+Pipeline commands still to come: `train-nn`, `export`, `predict`.
 
 ## Scheduled jobs
 
