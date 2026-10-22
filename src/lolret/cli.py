@@ -1,6 +1,6 @@
 """Command-line entry point: `lolret <command>`.
 
-Pipeline commands (build, train, export, predict) are added phase by phase.
+Pipeline commands (train, export, predict) are added phase by phase.
 """
 
 import asyncio
@@ -15,6 +15,7 @@ from lolret.collect.config import CollectConfig, load_config
 from lolret.collect.runner import RunResult, format_duration, run_collection
 from lolret.collect.store import Store
 from lolret.config import Settings, get_settings
+from lolret.dataset.build import build_dataset
 from lolret.log import configure_logging, get_logger
 from lolret.notify import notify_discord
 from lolret.riot.client import RiotAuthError, RiotClient
@@ -133,3 +134,34 @@ def status(config: ConfigOption = DEFAULT_COLLECT_CONFIG) -> None:
     for endpoint, count in sorted(summary["responses"].items()):
         typer.echo(f"  {endpoint:<15} {count:>8} responses cached")
     typer.echo(f"  open failures   {summary['failures']['open']:>8}")
+
+
+@app.command()
+def build(config: ConfigOption = DEFAULT_COLLECT_CONFIG) -> None:
+    """Build the point-in-time dataset (features and labels) from a collection run.
+
+    Reads only stored responses, never the API, and only players whose collection finished,
+    so it can run while `collect` is still going.
+    """
+    settings = get_settings()
+    cfg = load_config(config)
+    raw = run_db_path(settings, cfg)
+    if not raw.exists():
+        log.error(
+            "No collected data for run '%s' at %s. Run `lolret collect` first.", cfg.run_name, raw
+        )
+        raise typer.Exit(1)
+    store = Store(raw, read_only=True)
+    try:
+        summary = build_dataset(cfg, store, settings.data_dir / "processed" / cfg.run_name)
+    finally:
+        store.close()
+    churn = "n/a" if summary.churn_rate_eligible is None else f"{summary.churn_rate_eligible:.1%}"
+    log.info(
+        "Built %d examples from %d players: %d eligible, churn among eligible %s. Data in %s",
+        summary.examples,
+        summary.players,
+        summary.eligible,
+        churn,
+        summary.path.parent,
+    )

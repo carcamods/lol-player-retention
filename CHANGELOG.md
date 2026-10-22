@@ -2,6 +2,20 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-22] Phase 3: point-in-time dataset
+
+### Added
+- `lolret build`: extracts players, weekly game counts and per-match rows from a run's store
+  (never the API; only finished players), then builds one example per (player, cutoff) in
+  DuckDB SQL. Output: `data/processed/<run>/dataset.duckdb` and `examples.parquet`.
+- 21 features (activity windows, recency, win rate, loss streak, KDA, remakes, surrenders,
+  queue mix, champion and role diversity, session gaps), documented in `docs/features.md`.
+- Eligibility rule (ADR 0006): a pair counts only if the player played in the 28 days before
+  the cutoff. Filtering on activity *now* was rejected because it selects players on their future.
+- Leak guard test: features from the full data must equal features from data truncated at
+  each cutoff, on random data. Verified by injecting two leaks; both were caught.
+- Forward test added to the roadmap (phase 4c).
+
 ## [2026-10-22] Phase 2: data collection
 
 ### Added

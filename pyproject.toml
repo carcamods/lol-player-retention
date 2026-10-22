@@ -9,7 +9,9 @@ authors = [{ name = "Matias Carcamo", email = "matiascrgv@gmail.com" }]
 # 3.12 stays supported so the package installs on Google Colab (see docs/decisions/0004).
 requires-python = ">=3.12"
 dependencies = [
+    "duckdb>=2.0.0",
     "httpx>=0.28.1",
+    "pyarrow>=26.0.0",
     "pydantic-settings>=2.16.1",
     "pyyaml>=6.0.3",
     "typer>=0.27.3",
@@ -51,11 +53,15 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]  # assert is how pytest works
+"tests/**" = ["S101", "S311"]  # assert is how pytest works; seeded test data needs no crypto PRNG
 
 [tool.mypy]
 strict = true
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["pyarrow", "pyarrow.*"]
+ignore_missing_imports = true  # pyarrow ships no type stubs
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

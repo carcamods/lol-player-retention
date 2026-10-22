@@ -42,7 +42,7 @@ Live predictions run only from the CLI, with the developer's own key.
 | ID | Requirement |
 |---|---|
 | FR1 | **Collect.** `lolret collect` pulls a ladder sample and match history from the Riot API. It honours `X-App-Rate-Limit` and `Retry-After`, retries transient errors, caches raw responses, and resumes after an interruption without re-fetching. |
-| FR2 | **Point-in-time dataset.** Each row is a (player, cutoff T) pair. No feature uses data after T. A test fails if any post-T data reaches a feature. |
+| FR2 | **Point-in-time dataset.** Each row is a (player, cutoff T) pair. No feature uses data after T. A test fails if any post-T data reaches a feature. Only players active in the 28 days before T are eligible (ADR 0006). |
 | FR3 | **Classical models.** Majority class, a recency rule, logistic regression and LightGBM, compared on a temporal, player-grouped holdout. Probabilities are calibrated. Outputs are a saved artifact, `metrics.json` and a model card. |
 | FR3b | **Neural nets.** An MLP on the tabular features and a GRU sequence model over each player's last ~20 matches before T. Same splits, same metrics. Trained from a thin Colab notebook that calls the package; the same code runs locally on CPU. |
 | FR4 | **Snapshot export.** Player IDs are salted hashes. No Riot IDs or PUUIDs leave the machine. Output is JSON for the site. |
@@ -111,9 +111,10 @@ before the current split started. All cutoffs are chosen after the split start.
 |---|---|---|
 | 0 | Revoke the 2024 leaked credentials; apply for a Riot personal key | Done |
 | 1 | Foundation: repo, docs, tooling, CI | Done |
-| 2 | Riot client and `collect` (FR1) | In progress |
-| 3 | Point-in-time dataset, leak-guard test, EDA (FR2) | — |
+| 2 | Riot client and `collect` (FR1) | Done; full run in progress |
+| 3 | Point-in-time dataset, leak-guard test, EDA (FR2) | Dataset done; EDA waits for the full run |
 | 4a | Classical models, evaluation, model card (FR3) | — |
 | 4b | Neural nets on Colab (FR3b) | — |
+| 4c | Forward test: predict at today's cutoff, collect again 28 days later, compare (ADR 0006) | — |
 | 5 | Snapshot export, Quarto site, `predict` CLI, go public (FR4–FR6) | — |
 | 6 | Production key and live lookup (FR7) | Later |
