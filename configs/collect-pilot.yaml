@@ -1,0 +1,21 @@
+# Pilot: a small run on one platform to measure real requests per player and check the
+# response schema before committing to the multi-day run in collect.yaml.
+# Run:  uv run lolret collect -c configs/collect-pilot.yaml   (about 15-20 minutes)
+run_name: pilot
+
+platforms: [na1]
+tiers: [SILVER, GOLD, EMERALD]
+divisions: [II]
+players_per_division: 5
+pages_per_division: 2
+
+season_start: 2026-01-08
+latest_cutoff: 2026-09-24
+n_cutoffs: 3
+cutoff_spacing_days: 28
+lookback_days: 56
+label_window_days: 28
+bucket_days: 7
+details_per_cutoff: 20
+
+seed: 42

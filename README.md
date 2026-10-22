@@ -3,8 +3,8 @@
 Predicts whether a ranked **League of Legends** player will stop playing in the next
 **28 days**, using only what was knowable at prediction time.
 
-> **Status: Phase 1 of 6, foundation.** The repo, standards, tooling and CI are in place.
-> Data collection is next. See the [roadmap](docs/requirements.md#roadmap).
+> **Status: Phase 2 of 6, data collection.** `lolret collect` samples players and downloads
+> their match history. Next: the point-in-time dataset. See the [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 
@@ -22,7 +22,7 @@ explains the leak and how this version prevents it.
 ## Data flow
 
 ```
-Riot API ──collect──▶ data/raw (cached responses) ──build──▶ data/processed (features + labels per player × cutoff)
+Riot API ──collect──▶ data/raw/<run>.sqlite (cached responses) ──build──▶ data/processed (features + labels per player × cutoff)
                                                                    │
                                      ┌─────────────────────────────┴───────────┐
                                   train (local)                          train-nn (Colab / CPU)
@@ -35,10 +35,15 @@ Riot API ──collect──▶ data/raw (cached responses) ──build──▶
 Only the CLI talks to the Riot API. The public site is static and makes no API calls
 ([ADR 0002](docs/decisions/0002-static-snapshot-site.md)).
 
+**Collection** ([ADR 0005](docs/decisions/0005-collection-design.md)): players are sampled from
+random ladder pages per division. For each player, match IDs are fetched per 7-day bucket, and
+full details for the 20 most recent matches before each cutoff. Every response is cached in
+SQLite, so a stopped run resumes without re-requesting anything.
+
 ## Tech stack
 
-Python 3.12+ · uv · pydantic-settings · typer · ruff · mypy · pytest · pre-commit + gitleaks ·
-GitHub Actions. Later phases add httpx, DuckDB, LightGBM, SHAP, PyTorch and Quarto.
+Python 3.12+ · uv · httpx (async) · pydantic · typer · SQLite · ruff · mypy · pytest + respx ·
+pre-commit + gitleaks · GitHub Actions. Later phases add DuckDB, LightGBM, SHAP, PyTorch and Quarto.
 
 ## Setup
 
@@ -60,7 +65,8 @@ All settings come from environment variables or a git-ignored `.env`
 | Variable | Required | Description |
 |---|---|---|
 | `RIOT_API_KEY` | For `collect` / `predict` | Key from [developer.riotgames.com](https://developer.riotgames.com) |
-| `DISCORD_WEBHOOK_URL` | No | Pinged when a long `collect` run finishes |
+| `RIOT_RATE_LIMITS` | No | Per-routing-value limits, default `20:1,100:120` (personal/dev key) |
+| `DISCORD_WEBHOOK_URL` | No | Pinged when a `collect` run ends |
 | `DATA_DIR` | No | Local data directory, default `data` |
 | `LOG_LEVEL` | No | `DEBUG` / `INFO` / `WARNING` / `ERROR`, default `INFO` |
 
@@ -75,12 +81,22 @@ uv run mypy src tests           # type check
 uv run pre-commit run --all-files
 ```
 
-Pipeline commands (`collect`, `build`, `train`, `train-nn`, `export`, `predict`) are added
-phase by phase.
+**Collect data** (needs `RIOT_API_KEY`):
+
+```bash
+uv run lolret collect -c configs/collect-pilot.yaml   # pilot: 15 players, ~20 min
+uv run lolret collect -c configs/collect.yaml         # full run: ~6,000 players, ~32 h, ~2 GB
+uv run lolret status  -c configs/collect.yaml         # progress, from another terminal
+```
+
+Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
+`1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
+
+Pipeline commands still to come: `build`, `train`, `train-nn`, `export`, `predict`.
 
 ## Scheduled jobs
 
-None yet. Collection is run manually.
+None. Collection is started manually.
 
 ## Project docs
 
@@ -93,9 +109,11 @@ None yet. Collection is run manually.
 ## Known fragile points
 
 - **Riot API identifiers.** `summonerId` is deprecated; everything is keyed by `puuid`.
-- **Riot rate limits** are per region and per key type. Collection must honour `Retry-After`.
+- **Riot rate limits** are per routing value and per key type. Collection must honour `Retry-After`.
 - **Season and split resets** can drop inactive players from the ladder, which biases the
-  sample toward players who are still active. Cutoffs are chosen after the current split start.
+  sample toward players who are still active. `season_start` in the config guards the range.
+- **Match buckets use game start time.** A game starting just before a cutoff ends after it;
+  features must only use matches that ended before the cutoff.
 
 ## License and legal
 

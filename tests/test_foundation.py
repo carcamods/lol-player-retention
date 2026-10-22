@@ -1,28 +1,16 @@
 """Smoke tests for the project foundation: config, logging and the CLI."""
 
 import logging
-from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
 from lolret import __version__
 from lolret.cli import app
-from lolret.config import Settings, get_settings
+from lolret.config import Settings
 from lolret.log import configure_logging, get_logger
 
 FAKE_KEY = "fake-riot-key-for-tests"
-
-
-@pytest.fixture(autouse=True)
-def _isolated_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    # Run from an empty directory so a developer's real .env is never read by tests.
-    monkeypatch.chdir(tmp_path)
-    for var in ("RIOT_API_KEY", "DISCORD_WEBHOOK_URL", "DATA_DIR", "LOG_LEVEL"):
-        monkeypatch.delenv(var, raising=False)
-    get_settings.cache_clear()
-    # CliRunner swaps stderr per invocation; drop handlers bound to a previous test's stream.
-    logging.getLogger("lolret").handlers.clear()
 
 
 def test_secret_is_read_from_env_but_never_rendered(monkeypatch: pytest.MonkeyPatch) -> None:

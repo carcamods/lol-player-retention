@@ -42,3 +42,6 @@ site/.quarto/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Claude Code personal settings (local hooks)
+.claude/settings.local.json

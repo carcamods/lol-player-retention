@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     riot_api_key: SecretStr | None = None
+    # Personal and development keys share these limits; a production key gets higher ones.
+    riot_rate_limits: str = "20:1,100:120"
     discord_webhook_url: SecretStr | None = None
     data_dir: Path = Path("data")
     log_level: str = "INFO"

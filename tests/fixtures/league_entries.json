@@ -1,0 +1,41 @@
+[
+ {
+  "freshBlood": false,
+  "hotStreak": false,
+  "inactive": false,
+  "leaguePoints": 42,
+  "losses": 280,
+  "puuid": "fixture-puuid-01",
+  "queueType": "RANKED_SOLO_5x5",
+  "rank": "II",
+  "tier": "EMERALD",
+  "veteran": false,
+  "wins": 294
+ },
+ {
+  "freshBlood": false,
+  "hotStreak": false,
+  "inactive": false,
+  "leaguePoints": 81,
+  "losses": 58,
+  "puuid": "fixture-puuid-02",
+  "queueType": "RANKED_SOLO_5x5",
+  "rank": "II",
+  "tier": "EMERALD",
+  "veteran": false,
+  "wins": 78
+ },
+ {
+  "freshBlood": false,
+  "hotStreak": false,
+  "inactive": false,
+  "leaguePoints": 60,
+  "losses": 58,
+  "puuid": "fixture-puuid-03",
+  "queueType": "RANKED_SOLO_5x5",
+  "rank": "II",
+  "tier": "EMERALD",
+  "veteran": false,
+  "wins": 50
+ }
+]

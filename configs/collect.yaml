@@ -1,0 +1,27 @@
+# Full collection run. Design: docs/decisions/0005-collection-design.md
+# Run:    uv run lolret collect -c configs/collect.yaml
+# Watch:  uv run lolret status -c configs/collect.yaml   (from a second terminal)
+# Cost (measured by the pilot): ~47 requests per player, so ~32 h and ~2 GB for this config.
+run_name: v1
+
+# One rate-limit budget per platform and per region, so platforms run in parallel.
+platforms: [na1, euw1, kr]
+tiers: [IRON, BRONZE, SILVER, GOLD, PLATINUM, EMERALD, DIAMOND]
+divisions: [I, II, III, IV]
+players_per_division: 72      # 7 tiers x 4 divisions x 72 = 2,016 players per platform
+pages_per_division: 6         # random ladder pages drawn per division
+
+# 2026 ranked year began 2026-01-08. Season 3 (2026-07-29) carried ranks over with no reset,
+# so the current ladder still holds everyone who played ranked this year.
+season_start: 2026-01-08
+
+# Cutoffs: 2026-07-30, 2026-08-27, 2026-09-24. The latest label window ends 2026-10-22.
+latest_cutoff: 2026-09-24
+n_cutoffs: 3
+cutoff_spacing_days: 28
+lookback_days: 56             # features use up to 8 weeks before each cutoff
+label_window_days: 28         # churned = no game of any queue in the 28 days after the cutoff
+bucket_days: 7
+details_per_cutoff: 20        # full match details for the 20 most recent matches before a cutoff
+
+seed: 42
