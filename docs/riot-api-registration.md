@@ -37,26 +37,26 @@ Personal, non-commercial data-science research project that models when ranked L
 
 **Detailed description**
 
+The form field allows 1,500 characters; this text is about 1,320.
+
 ```
-lolret is a personal, non-commercial data-science research project, built and run by one developer (me) as a portfolio case study. It studies player retention: given a ranked player's recent match history, how likely are they to stop playing for the next 28 days, and which patterns (session frequency, loss streaks, game length) tend to come before a break.
+lolret is a personal, non-commercial data-science research project, built and run only by me as a portfolio case study. It studies player retention: how likely a ranked player is to stop playing for the next 28 days, and which patterns (session frequency, loss streaks, game length) come before a break.
 
-How the API is used
-- Only I run the code, locally. The key is stored in an environment variable, never in code or in the repository.
-- LEAGUE-V4 entries: to sample ranked Solo/Duo players across tiers (Iron to Diamond) in NA1, EUW1 and KR.
-- MATCH-V5 match IDs (with startTime/endTime) and match details: each sampled player's recent match history.
-- ACCOUNT-V1 by Riot ID: only to test predictions on my own account.
-- Requests stay within the 20 per second / 100 per 2 minutes limits and honour Retry-After. Responses are cached, so nothing is requested twice. Expected volume: tens of thousands of requests per region, spread over several days.
+API use
+- Run locally by me only. The key lives in an environment variable, never in code.
+- LEAGUE-V4 entries: sample ranked Solo/Duo players (Iron to Diamond) in NA1, EUW1 and KR.
+- MATCH-V5 match IDs (startTime/endTime) and match details: each player's recent history.
+- ACCOUNT-V1 by Riot ID: only to test on my own account.
+- Stays within rate limits, honours Retry-After and caches responses. Tens of thousands of requests per region, over several days.
 
-Data handling
-- Raw API responses stay on my machine. Nothing is sold or shared.
-- Anything published is anonymised: player identifiers are replaced with salted hashes, and no Riot IDs, PUUIDs or summoner names are shown, so no player can be identified.
+Data
+- Raw responses stay on my machine. Nothing is sold or shared.
+- Published results are anonymised (salted-hash IDs; no Riot IDs, PUUIDs or names), so no player can be identified.
 
-What gets published
-- The source code on GitHub and a static write-up page with aggregate findings, model performance and a sample of anonymised example predictions. The page does not call the Riot API and offers no player lookup. If I later want a public live lookup, I will register a separate production application.
+Published
+- Source code on GitHub and a static write-up with aggregate findings, model performance and anonymised example predictions. It does not call the API and has no player lookup. A public live lookup would get its own production application.
 
-What it does not do
-- No MMR/ELO estimation or alternative ranking, no player profiles, no betting, no monetization.
-- The project carries Riot's legal disclaimer.
+Not included: MMR/ELO estimation or ranking, player profiles, betting, monetization. Riot's legal disclaimer is shown.
 ```
 
 **Product URL** (if the form requires one): `https://github.com/carcamods`. The project repo
