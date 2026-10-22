@@ -3,8 +3,8 @@
 Predicts whether a ranked **League of Legends** player will stop playing in the next
 **28 days**, using only what was knowable at prediction time.
 
-> **Status: Phase 2 of 6, data collection.** `lolret collect` samples players and downloads
-> their match history. Next: the point-in-time dataset. See the [roadmap](docs/requirements.md#roadmap).
+> **Status: Phase 3 of 6, dataset.** `lolret build` turns collected data into point-in-time
+> features and labels. The full collection run is in progress. See the [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 
@@ -43,7 +43,7 @@ SQLite, so a stopped run resumes without re-requesting anything.
 ## Tech stack
 
 Python 3.12+ · uv · httpx (async) · pydantic · typer · SQLite · ruff · mypy · pytest + respx ·
-pre-commit + gitleaks · GitHub Actions. Later phases add DuckDB, LightGBM, SHAP, PyTorch and Quarto.
+DuckDB + pyarrow · pre-commit + gitleaks · GitHub Actions. Later phases add LightGBM, SHAP, PyTorch and Quarto.
 
 ## Setup
 
@@ -81,6 +81,14 @@ uv run mypy src tests           # type check
 uv run pre-commit run --all-files
 ```
 
+**Build the dataset** (no API calls; works while a run is still going, using finished players):
+
+```bash
+uv run lolret build -c configs/collect.yaml   # -> data/processed/v1/{dataset.duckdb, examples.parquet}
+```
+
+Features and labels are documented in [docs/features.md](docs/features.md).
+
 **Collect data** (needs `RIOT_API_KEY`):
 
 ```bash
@@ -92,7 +100,7 @@ uv run lolret status  -c configs/collect.yaml         # progress, from another t
 Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
 `1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
 
-Pipeline commands still to come: `build`, `train`, `train-nn`, `export`, `predict`.
+Pipeline commands still to come: `train`, `train-nn`, `export`, `predict`.
 
 ## Scheduled jobs
 
@@ -102,6 +110,7 @@ None. Collection is started manually.
 
 - [Requirements](docs/requirements.md): goal, audiences, requirements, roadmap
 - [Engineering standards](docs/standards.md)
+- [Dataset and features](docs/features.md)
 - [Decisions](docs/decisions/)
 - [Riot API registration](docs/riot-api-registration.md): key types and the application text
 - [Changelog](CHANGELOG.md)

@@ -35,3 +35,9 @@ def test_status_reports_progress(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     assert result.exit_code == 0
     assert "1 / 2" in result.stdout
     assert "target 15" in result.stdout
+
+
+def test_build_without_collected_data_exits_with_an_error() -> None:
+    result = CliRunner().invoke(app, ["build", "-c", PILOT])
+
+    assert result.exit_code == 1
