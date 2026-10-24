@@ -11,15 +11,18 @@ changing code in that folder. Read what the task needs, not the whole repo.
 
 ## Active work (updated 2026-10-24)
 
-- **Done:** Phase 1 foundation, Phase 2 collection, Phase 3 dataset (`lolret build`), Phase 4a
-  classical models (`lolret train`, ADR 0008). Run `v1` finished 2026-10-24: 6,048 players,
+- **Done:** Phase 1 foundation, Phase 2 collection, Phase 3 dataset (`lolret build`) and EDA
+  (`notebooks/eda.ipynb`), Phase 4a classical models (`lolret train`, ADR 0008). Run `v1` finished 2026-10-24: 6,048 players,
   0 failures, 11,678 eligible examples, churn 17-19% at every cutoff. Never delete or rewrite
   `data/`.
 - **Results:** on the test set LightGBM reaches PR-AUC 0.464 against 0.455 for the recency
   rule, and the gain's 95% interval includes zero, so no model clearly beats recency yet
-  (README; full model card in `data/models/v1/`).
-- **Next:** the EDA notebook (rest of Phase 3). Look for signal beyond recency: it decides
-  whether to add features before 4b.
+  (README; full model card in `data/models/v1/`). The EDA shows why: 69% of churners hadn't
+  played for 7+ days, and inside those groups no feature beats AUC 0.60; in-game statistics
+  carry almost no signal anywhere.
+- **Next (owner decides):** features that tell a break from quitting (earlier breaks and
+  returns, activity over a longer window than 8 weeks, account age) before 4b, or go straight
+  to 4b.
 - **Later:** 4b neural nets on Colab (same split and `evaluate()` as 4a), 4c forward test,
   5 site and launch. See the roadmap.
 
@@ -32,12 +35,13 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `notebooks/`, `tests/`, `docs/` |
 
 ## Commands
 
 ```bash
 uv sync                                   # install
+uv sync --group notebooks                 # plus pandas, matplotlib, Jupyter kernel
 uv run pytest                             # tests: no network, no key
 uv run mypy src tests                     # types (strict)
 uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
