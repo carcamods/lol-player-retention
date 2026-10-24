@@ -108,7 +108,7 @@ None. Collection is started manually.
 
 ## How this project is built
 
-I develop it with an AI coding agent (Claude Code), and the repo is the agent's memory. A short
+I develop it with an AI coding agent, and the repo is the agent's memory. A short
 root [`AGENTS.md`](AGENTS.md) is read every session, each module's `AGENTS.md` is read only when
 that code is touched, decisions are logged once as ADRs, and an end-of-session `/checkpoint`
 keeps it all current. I call this *layered repo memory*. It is a form of what is usually called
