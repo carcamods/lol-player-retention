@@ -68,6 +68,7 @@ def game(puuid: str, i: int, end: datetime, *, win: bool, **overrides: Any) -> R
         "team_position": "TOP",
         "remake": False,
         "surrendered": False,
+        "summoner_level": 100,
     }
     return row | overrides
 
@@ -90,7 +91,7 @@ def examples(
 def test_features_and_label_for_a_hand_built_player() -> None:
     h = timedelta(hours=1)
     matches = [
-        game("A", 1, T - 2 * h, win=False, kills=2, deaths=4, assists=2),
+        game("A", 1, T - 2 * h, win=False, kills=2, deaths=4, assists=2, summoner_level=101),
         game("A", 2, T - 3 * h, win=False, champion_id=2),
         game("A", 3, T - 24 * h, win=True, champion_id=3, team_position="JUNGLE"),
         game("A", 4, T - 48 * h, win=True, queue_id=450, team_position=None),
@@ -106,6 +107,8 @@ def test_features_and_label_for_a_hand_built_player() -> None:
     assert (a["eligible"], a[LABEL]) == (True, True)
     assert (a["games_0_7d"], a["games_8_14d"], a["games_15_28d"], a["games_29_56d"]) == (3, 2, 2, 4)
     assert a["active_weeks_8w"] == 5
+    # Weeks -8..-1 hold 0 0 4 0 1 1 2 3: games came back after an empty week twice.
+    assert a["returns_8w"] == 2
     assert a["recent_games"] == 4
     assert a["days_since_last_game"] == pytest.approx(2 / 24)
     assert a["win_rate"] == pytest.approx(0.5)
@@ -117,13 +120,18 @@ def test_features_and_label_for_a_hand_built_player() -> None:
     assert a["main_role_share"] == pytest.approx(2 / 3)
     # Games 1 and 2 are 30 minutes apart; game 3 ended 20.5 h before game 2 started.
     assert a["last_session_games"] == 2
+    # Gaps before games 1-3: 0.5 h, 20.5 h and 23.5 h (game 4 has no earlier game in view).
+    assert a["longest_gap_days"] == pytest.approx(23.5 / 24)
+    assert a["break_vs_longest_gap"] == pytest.approx(2 / 23.5)
+    assert a["summoner_level"] == 101
 
 
 def test_a_player_with_no_games_is_ineligible_with_empty_features() -> None:
     [b] = examples([player("B")], weeks("B", {}), [], [T])
 
-    assert (b["eligible"], b[LABEL], b["recent_games"]) == (False, True, 0)
+    assert (b["eligible"], b[LABEL], b["recent_games"], b["returns_8w"]) == (False, True, 0, 0)
     assert b["days_since_last_game"] is None
+    assert (b["longest_gap_days"], b["break_vs_longest_gap"], b["summoner_level"]) == (None,) * 3
 
 
 def test_playing_after_the_cutoff_means_not_churned() -> None:
@@ -158,6 +166,7 @@ def random_world(seed: int) -> tuple[list[Row], list[Row], list[Row]]:
                     champion_id=rng.randint(1, 8),
                     queue_id=rng.choice([420, 440, 450, 400]),
                     team_position=rng.choice(["TOP", "MIDDLE", None]),
+                    summoner_level=30 + (end - (T - 12 * WEEK)).days // 3,
                 )
             )
     return players, buckets, matches
@@ -201,6 +210,7 @@ def test_participant_row_from_a_real_match() -> None:
     assert row["match_id"] == match["metadata"]["matchId"]
     assert row["game_end"] > row["game_start"]
     assert row["win"] is bool(someone["win"])
+    assert row["summoner_level"] == someone["summonerLevel"]
     assert participant_row("na1", "not-in-this-match", match) is None
 
 

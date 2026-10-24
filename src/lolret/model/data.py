@@ -21,6 +21,7 @@ FEATURES: tuple[str, ...] = (
     "games_15_28d",
     "games_29_56d",
     "active_weeks_8w",
+    "returns_8w",
     "recent_games",
     "days_since_last_game",
     "win_rate",
@@ -35,8 +36,11 @@ FEATURES: tuple[str, ...] = (
     "aram_share",
     "champion_diversity",
     "gap_hours_median",
+    "longest_gap_days",
+    "break_vs_longest_gap",
     "last_session_games",
     "main_role_share",
+    "summoner_level",
 )
 
 Matrix = NDArray[np.float64]

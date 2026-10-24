@@ -41,6 +41,7 @@ PARTICIPANT_FIELDS = {
     "timePlayed",
     "gameEndedInEarlySurrender",
     "gameEndedInSurrender",
+    "summonerLevel",
 }
 
 
