@@ -4,8 +4,8 @@ Predicts whether a ranked **League of Legends** player will stop playing in the 
 **28 days**, using only what was knowable at prediction time.
 
 > **Status: Phase 4 of 6, models.** The full collection run is done (6,048 players, 11,678
-> eligible examples) and the classical models are trained and evaluated: see
-> [first results](#first-results). Next: exploratory analysis, then neural nets. See the
+> eligible examples), the classical models are trained and evaluated, and the exploratory
+> analysis explains the results: see [first results](#first-results). See the
 > [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
@@ -35,8 +35,12 @@ stopped playing. 95% bootstrap intervals in parentheses.
 
 Neither model clearly beats the recency rule yet: LightGBM's PR-AUC gain is +0.010 (95% CI
 -0.031 to +0.055). Its probabilities are well calibrated, and its strongest signals are games in
-the last 7 days and days since the last game. The next phases test whether richer features or a
-sequence model add signal beyond recency.
+the last 7 days and days since the last game.
+
+The [exploratory analysis](notebooks/eda.ipynb) shows why. 69% of churners hadn't played for a
+week or more at the cutoff, and among those players no feature separates a break from quitting
+much better than recency does (AUC 0.60 at best inside those groups). In-game statistics such as
+win rate and KDA carry almost no signal at all.
 
 ## Data flow
 
@@ -62,7 +66,7 @@ SQLite, so a stopped run resumes without re-requesting anything.
 ## Tech stack
 
 Python 3.12+ · uv · httpx (async) · pydantic · typer · SQLite · ruff · mypy · pytest + respx ·
-DuckDB + pyarrow · scikit-learn · LightGBM · pre-commit + gitleaks · GitHub Actions. Later phases add
+DuckDB + pyarrow · scikit-learn · LightGBM · pandas + matplotlib (notebooks) · pre-commit + gitleaks · GitHub Actions. Later phases add
 PyTorch and Quarto.
 
 ## Setup
@@ -108,6 +112,15 @@ uv run lolret build -c configs/collect.yaml   # -> data/processed/v1/{dataset.du
 ```
 
 Features and labels are documented in [docs/features.md](docs/features.md).
+
+**Explore the data** (after `build`):
+
+```bash
+uv sync --group notebooks   # pandas, matplotlib and a Jupyter kernel
+```
+
+Then open [`notebooks/eda.ipynb`](notebooks/eda.ipynb) in Jupyter or VS Code with the project's
+`.venv`. Outputs aren't committed; the findings are written out at the end of the notebook.
 
 **Train and evaluate the classical models** (after `build`):
 

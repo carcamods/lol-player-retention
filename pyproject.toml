@@ -35,6 +35,12 @@ dev = [
     "ruff>=0.17.1",
     "types-pyyaml>=6.0.12.20260906",
 ]
+notebooks = [
+    "ipykernel>=7.4.0",
+    "matplotlib>=3.11.2",
+    "nbconvert>=7.17.2",
+    "pandas>=3.1.0",
+]
 
 [tool.ruff]
 line-length = 100

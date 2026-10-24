@@ -2,6 +2,20 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-24] Exploratory analysis
+
+### Added
+- `notebooks/eda.ipynb`: population by region and tier, churn by cutoff, region and tier,
+  feature distributions and missing values, each feature against churn, and the signal left
+  beyond recency. It reads only the processed dataset and drops `puuid` at load. Outputs are
+  stripped on commit, so the findings are written out in the last cell.
+- Findings on run `v1`: churn is stable across cutoffs (17-19%); it is 8% in Diamond and 23-25%
+  in Silver and Bronze; 69% of churners hadn't played for 7+ days, and inside those groups no
+  feature beats AUC 0.60, which is why the models only edge out the recency rule.
+- `notebooks` dependency group (pandas, matplotlib, ipykernel, nbconvert), installed with
+  `uv sync --group notebooks`, so CI and a plain install stay lean.
+- `notebooks/AGENTS.md` with the notebook rules.
+
 ## [2026-10-24] Phase 4a: classical models
 
 ### Added

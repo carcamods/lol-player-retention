@@ -3,7 +3,8 @@
 Turns a run's store into one row per (player, cutoff T): features, `eligible` and `churned`.
 Reads only stored responses, never the API, and only players whose collection finished.
 
-**Status:** done (Phase 3), verified on the pilot. The EDA notebook waits for run `v1`.
+**Status:** done (Phase 3), built on run `v1` (6,048 players, 11,678 eligible examples) and
+explored in `notebooks/eda.ipynb`.
 
 ## Files
 
