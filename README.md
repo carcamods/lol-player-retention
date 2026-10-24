@@ -106,6 +106,18 @@ Pipeline commands still to come: `train`, `train-nn`, `export`, `predict`.
 
 None. Collection is started manually.
 
+## How this project is built
+
+I develop it with an AI coding agent, and the repo is the agent's memory. A short
+root [`AGENTS.md`](AGENTS.md) is read every session, each module's `AGENTS.md` is read only when
+that code is touched, decisions are logged once as ADRs, and an end-of-session `/checkpoint`
+keeps it all current. I call this *layered repo memory*. It is a form of what is usually called
+context engineering, and it uses `AGENTS.md`, the open format most coding agents read, so it
+isn't tied to one tool. The rules that matter most are enforced by tests and CI, not prompts:
+the leak guard, strict types and secret scanning. I review and merge every change. Details:
+[standards](docs/standards.md#working-with-ai-agents-layered-repo-memory),
+[ADR 0007](docs/decisions/0007-layered-repo-memory.md) and [ADR 0009](docs/decisions/0009-agents-md.md).
+
 ## Project docs
 
 - [Requirements](docs/requirements.md): goal, audiences, requirements, roadmap

@@ -11,7 +11,8 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | [0004](0004-neural-nets-on-colab.md) | Neural nets (MLP, GRU) in PyTorch, trained on Colab; keep Python 3.12 support | Accepted |
 | [0005](0005-collection-design.md) | Collection: ladder sampling, weekly buckets, SQLite cache, failure policy; pilot results | Accepted |
 | [0006](0006-eligible-population.md) | Eligible = played in the 28 days before the cutoff; timing rules per column; forward test | Accepted |
-| [0007](0007-layered-repo-memory.md) | Layered repo memory for AI-assisted development: map, module context, ADRs, checkpoint | Accepted |
+| [0007](0007-layered-repo-memory.md) | Layered repo memory for AI-assisted development: map, module context, ADRs, checkpoint | Accepted; file names amended by 0009 |
+| [0009](0009-agents-md.md) | Context files are named `AGENTS.md`, the cross-tool format, instead of `CLAUDE.md` | Accepted |
 
 ## Template
 

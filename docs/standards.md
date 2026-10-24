@@ -103,7 +103,7 @@ Before a PR is merged:
   is now, not as it was planned.
 - Significant decisions get a short ADR in `docs/decisions/` (context, decision, consequences),
   plus a row in the index in `docs/decisions/README.md`.
-- The `CLAUDE.md` of every module the change touched is still accurate.
+- The `AGENTS.md` of every module the change touched is still accurate.
 
 ## Working with AI agents: layered repo memory
 
@@ -112,8 +112,8 @@ agent's memory, and context is layered so a session reads only what its task nee
 
 | Layer | File | Loaded |
 |---|---|---|
-| Map | root `CLAUDE.md`: purpose, "Active work", where things live, rules that always apply | every session |
-| Module context | `src/lolret/<module>/CLAUDE.md`, `tests/CLAUDE.md`, `docs/CLAUDE.md`: purpose, status, rules that must not break, pitfalls, tests | only when files in that folder are opened |
+| Map | root `AGENTS.md`: purpose, "Active work", where things live, rules that always apply | every session |
+| Module context | `src/lolret/<module>/AGENTS.md`, `tests/AGENTS.md`, `docs/AGENTS.md`: purpose, status, rules that must not break, pitfalls, tests | before changing code in that folder |
 | Decisions | `docs/decisions/` with an index in `README.md` | on demand, one ADR at a time |
 | History | `CHANGELOG.md`, newest first | on demand, top entries only |
 | Checkpoint | `/checkpoint` and `/adr` commands in `.claude/commands/` | run by the developer |
@@ -124,5 +124,11 @@ are in front of the agent exactly when it edits that module, which keeps changes
 fixes specific. The end-of-session checkpoint keeps the layers current, because stale context
 is worse than none.
 
+The context files are named `AGENTS.md`, the open format most coding agents read, so they are
+not tied to one tool. Claude Code reads them as long as no `CLAUDE.md` exists, so the repo has
+none, and a personal `CLAUDE.local.md` must not be added either. Claude Code loads a module's
+file by itself when it opens a file in that folder; other tools may not, which is why the map
+tells every agent to read it before changing code there (ADR 0009).
+
 Personal, machine-local notes (working style, temporary local state) stay out of git, in the
-agent's local memory or a git-ignored `.claude/settings.local.json`. See ADR 0007.
+agent's local memory or a git-ignored `.claude/settings.local.json`. See ADR 0007 and ADR 0009.

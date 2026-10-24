@@ -11,5 +11,5 @@ empty, propose one).
    conversation and the repo. If something is ambiguous, ask before writing.
 3. Add a one-line row for it to the index in `docs/decisions/README.md`.
 4. If it reverses an earlier ADR, mark that one "Superseded by NNNN" (don't rewrite it).
-5. If it changes a module's rules, update that module's `CLAUDE.md`. If it changes requirements
+5. If it changes a module's rules, update that module's `AGENTS.md`. If it changes requirements
    or the roadmap, update `docs/requirements.md`.
