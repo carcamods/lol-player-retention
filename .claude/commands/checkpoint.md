@@ -12,6 +12,7 @@ We are wrapping up this working session. Do the following, in order, and report 
    - the "Active work" section of the root `AGENTS.md` (what's done, what's running, next step);
    - the `AGENTS.md` of every module whose code changed (status, files, rules, tests);
    - phase statuses in the roadmap in `docs/requirements.md`;
+   - the boxes in `docs/checklist.md` for tasks this session finished, and any new tasks;
    - `README.md`, if commands or usage changed.
    Keep each `AGENTS.md` short; link to ADRs and docs instead of copying them.
 4. **Checks.** Run `uv run ruff check .`, `uv run mypy src tests` and `uv run pytest`. If any

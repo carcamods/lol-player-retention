@@ -31,6 +31,7 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | Need | Read |
 |---|---|
 | Goal, requirements, roadmap | `docs/requirements.md` |
+| Every task by phase, what's left and who does it | `docs/checklist.md` |
 | Why something is the way it is | `docs/decisions/README.md` (index), then only the relevant ADR |
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
