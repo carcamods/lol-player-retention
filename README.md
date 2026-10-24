@@ -3,9 +3,10 @@
 Predicts whether a ranked **League of Legends** player will stop playing in the next
 **28 days**, using only what was knowable at prediction time.
 
-> **Status: Phase 4 of 6, models.** `lolret train` trains and evaluates the baselines, logistic
-> regression and LightGBM. The first real results wait for the full collection run, which is in
-> progress. See the [roadmap](docs/requirements.md#roadmap).
+> **Status: Phase 4 of 6, models.** The full collection run is done (6,048 players, 11,678
+> eligible examples) and the classical models are trained and evaluated: see
+> [first results](#first-results). Next: exploratory analysis, then neural nets. See the
+> [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 
@@ -19,6 +20,23 @@ snapshot.
 This is a rebuild of my 2024 data-science bootcamp project. The original reported 89–91%
 accuracy, but its features leaked the label. [ADR 0003](docs/decisions/0003-point-in-time-labels.md)
 explains the leak and how this version prevents it.
+
+## First results
+
+Classical models on 1,104 held-out players at the latest cutoff (2026-09-24), 18.1% of whom
+stopped playing. 95% bootstrap intervals in parentheses.
+
+| Model | PR-AUC | ROC-AUC | Brier |
+|---|---|---|---|
+| Majority class | 0.181 | 0.500 | 0.148 |
+| Recency rule (days since the last game) | 0.455 (0.393, 0.528) | 0.814 (0.784, 0.843) | 0.120 |
+| Logistic regression | 0.452 (0.389, 0.527) | 0.819 (0.790, 0.848) | 0.119 |
+| LightGBM | 0.464 (0.400, 0.541) | 0.825 (0.797, 0.854) | 0.118 |
+
+Neither model clearly beats the recency rule yet: LightGBM's PR-AUC gain is +0.010 (95% CI
+-0.031 to +0.055). Its probabilities are well calibrated, and its strongest signals are games in
+the last 7 days and days since the last game. The next phases test whether richer features or a
+sequence model add signal beyond recency.
 
 ## Data flow
 
@@ -105,7 +123,7 @@ rule ("days since the last game"). Design: [ADR 0008](docs/decisions/0008-classi
 
 ```bash
 uv run lolret collect -c configs/collect-pilot.yaml   # pilot: 15 players, ~20 min
-uv run lolret collect -c configs/collect.yaml         # full run: ~6,000 players, ~32 h, ~2 GB
+uv run lolret collect -c configs/collect.yaml         # full run: ~6,000 players, ~35 h, ~2.4 GB
 uv run lolret status  -c configs/collect.yaml         # progress, from another terminal
 ```
 

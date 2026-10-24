@@ -3,8 +3,9 @@
 Trains the Phase 4a ladder (majority class, recency rule, logistic regression, LightGBM) on
 `examples.parquet` and evaluates it on held-out players at the latest cutoff. Design: ADR 0008.
 
-**Status:** pipeline done and tested. The first real numbers wait for run `v1`; partial-data
-runs work and mark the model card "Preliminary".
+**Status:** done. First results on run `v1` (2026-10-24) are in the README: no model clearly
+beats the recency rule yet. A test set with fewer than 200 churners marks the model card
+"Preliminary".
 
 ## Files
 
@@ -38,6 +39,8 @@ runs work and mark the model card "Preliminary".
 - Reliability bins are equal-count. With tied predictions (a constant model) the bins are
   arbitrary.
 - scikit-learn ships no type stubs; `pyproject.toml` has a mypy override.
+- Run `v1`'s test set has 200 churners, so PR-AUC intervals are about +/-0.07 wide. Differences
+  between models smaller than that aren't resolvable; say so rather than ranking them.
 
 ## Tests
 

@@ -2,7 +2,7 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
-## [2026-10-22] Phase 4a: classical models
+## [2026-10-24] Phase 4a: classical models
 
 ### Added
 - `lolret train -c configs/train.yaml`: trains a majority-class baseline, the recency rule,
@@ -19,6 +19,9 @@ Notable changes, newest first. Each entry says what changed and why.
 - Tests: the model's feature list must match `features.sql`, split properties, save and reload,
   and a check that no player identifier reaches any output.
 - Dependencies: scikit-learn, LightGBM.
+- First results on run `v1` (1,104 held-out players, 18% churn): LightGBM PR-AUC 0.464, the
+  recency rule 0.455, logistic regression 0.452. No model clearly beats the recency rule; the
+  README has the table.
 
 ## [2026-10-22] AGENTS.md instead of CLAUDE.md
 

@@ -8,7 +8,7 @@ dataset: v1                   # reads data/processed/v1/examples.parquet
 test_fraction: 0.3
 cv_folds: 5                   # player-grouped folds inside training: model selection + calibration
 
-logreg_c: [0.01, 0.1, 1.0, 10.0]
+logreg_c: [0.001, 0.003, 0.01, 0.03, 0.1, 1.0, 10.0]
 
 lightgbm:
   learning_rate: 0.03

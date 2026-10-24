@@ -28,7 +28,9 @@ player, so a player's side never changes as the dataset grows.
 **Selection and calibration use the training set only.** Five player-grouped folds
 (`GroupKFold`, shuffled, seeded):
 
-- Logistic regression: C from `[0.01, 0.1, 1, 10]`, chosen by out-of-fold log loss.
+- Logistic regression: C from `[0.001, 0.003, 0.01, 0.03, 0.1, 1, 10]`, chosen by
+  out-of-fold log loss. The first grid started at 0.01, and run `v1` picked that edge, so
+  the grid was widened; it now picks 0.03, and the loss is almost flat from 0.01 to 10.
 - LightGBM: fixed parameters (`configs/train.yaml`), early stopping on each fold; the final
   model uses the mean best round count.
 - Both are Platt-scaled, fitted on their out-of-fold predictions, then refitted on all

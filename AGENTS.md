@@ -9,18 +9,17 @@ This file is a map, read at the start of every session by Claude Code, Codex and
 that use `AGENTS.md`. Each module has its own `AGENTS.md` with its context: read it before
 changing code in that folder. Read what the task needs, not the whole repo.
 
-## Active work (updated 2026-10-22)
+## Active work (updated 2026-10-24)
 
 - **Done:** Phase 1 foundation, Phase 2 collection, Phase 3 dataset (`lolret build`), Phase 4a
-  pipeline (`lolret train`, ADR 0008; tested, run only on partial data so far).
-- **In progress:** collection run `v1` on the owner's machine, started 2026-10-22 18:17 UTC.
-  The runner estimates 21-27 h (KR is slowest, about 2026-10-23 21:30 UTC). Check it with
-  `lolret status -c configs/collect.yaml`. Never delete or rewrite `data/`, and don't
-  change `configs/collect.yaml` while the run is going.
-- **Next:** when the run finishes, `lolret build -c configs/collect.yaml`, then
-  `lolret train -c configs/train.yaml` for the first real results, then the EDA notebook (rest
-  of Phase 3). Check the churn rate by cutoff: on the first 122 players it was 37% at the
-  latest cutoff against 20-24% at the earlier two (only 54 rows).
+  classical models (`lolret train`, ADR 0008). Run `v1` finished 2026-10-24: 6,048 players,
+  0 failures, 11,678 eligible examples, churn 17-19% at every cutoff. Never delete or rewrite
+  `data/`.
+- **Results:** on the test set LightGBM reaches PR-AUC 0.464 against 0.455 for the recency
+  rule, and the gain's 95% interval includes zero, so no model clearly beats recency yet
+  (README; full model card in `data/models/v1/`).
+- **Next:** the EDA notebook (rest of Phase 3). Look for signal beyond recency: it decides
+  whether to add features before 4b.
 - **Later:** 4b neural nets on Colab (same split and `evaluate()` as 4a), 4c forward test,
   5 site and launch. See the roadmap.
 
