@@ -2,6 +2,14 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-24] Task checklist
+
+### Added
+- `docs/checklist.md`: every task from the first commit to launch, by roadmap phase, with done
+  items ticked and owner-only tasks marked. The roadmap keeps phase status; the checklist breaks
+  each phase into tasks.
+- The root map and the docs table list it, and `/checkpoint` ticks its boxes.
+
 ## [2026-10-24] Exploratory analysis
 
 ### Added

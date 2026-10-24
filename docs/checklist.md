@@ -20,32 +20,37 @@ else is code or docs, delivered as a PR that Matias reviews.
 - [x] Tooling and CI: uv, ruff, mypy, pytest, pre-commit with gitleaks (#1).
 - [x] Requirements, standards and the first ADRs (#1, #2).
 - [x] Layered repo memory: module context files, `/checkpoint`, `/adr` (#5).
-- [ ] Context files renamed to `AGENTS.md` (#7). *Review and merge: Matias*
+- [x] Context files renamed to `AGENTS.md` (#7, ADR 0009).
 
 ## Phase 2: data collection
 
 - [x] Async Riot client: rate limits per region, `Retry-After`, retries (#3).
 - [x] `lolret collect` with a resumable SQLite cache and `lolret status` (#3).
 - [x] Pilot run, cost check and anonymised test fixtures (ADR 0005).
-- [ ] Full run `v1`: 2,016 players in each of NA1, EUW1 and KR. Started 2026-10-22.
+- [x] Full run `v1`: 2,016 players in each of NA1, EUW1 and KR, 2026-10-22 to 2026-10-24,
+      0 failures.
 
 ## Phase 3: dataset
 
 - [x] Point-in-time features and labels, with the eligibility rule (#4, ADR 0006).
 - [x] Leak guard test (#4).
-- [ ] `lolret build` on the full `v1` run.
-- [ ] EDA notebook (`notebooks/eda.ipynb`), reading processed data only:
+- [x] `lolret build` on the full `v1` run: 11,678 eligible examples.
+- [x] EDA notebook (`notebooks/eda.ipynb`), reading processed data only:
   - population by region and tier
   - churn rate by cutoff and region
   - feature distributions and missing values
   - each feature against the label
+  - the signal left beyond recency (#9)
 
 ## Phase 4a: classical models
 
-- [ ] Model ladder, held-out evaluation and model card (#6, ADR 0008). *Review and merge: Matias*
-- [ ] Train on the full dataset and read the model card.
-- [ ] Check whether churn really rises at the latest cutoff (37% against 20–24% on the
-      first 122 players), and how much that hurts calibration.
+- [x] Model ladder, held-out evaluation and model card (#6, ADR 0008).
+- [x] Train on the full dataset and read the model card: no model clearly beats the recency
+      rule yet (README, *First results*).
+- [x] Check whether churn really rises at the latest cutoff (37% against 20–24% on the
+      first 122 players). It doesn't: 17–19% at every cutoff, and calibration holds.
+- [ ] Decide: features that tell a break from quitting first, or straight to 4b (EDA
+      findings, #9). *Matias*
 
 ## Phase 4b: neural nets
 
@@ -61,8 +66,8 @@ else is code or docs, delivered as a PR that Matias reviews.
 
 ## Phase 4c: forward test
 
-Start this as soon as 4a works on the full data: it needs 28 days of waiting, and launch
-doesn't wait for it.
+Start this as soon as 4a works on the full data (it does since 2026-10-24): it needs 28 days
+of waiting, and launch doesn't wait for it.
 
 - [ ] Predict for every eligible player at a cutoff of "today". Commit the file's SHA-256 so
       the predictions provably weren't changed after the fact.

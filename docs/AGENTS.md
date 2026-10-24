@@ -8,6 +8,7 @@ short sentences, no secrets, no real player identifiers, no employer or client m
 | File | Owns | Update when |
 |---|---|---|
 | `requirements.md` | goal, requirements, roadmap with phase status | a phase starts or ends, a requirement changes |
+| `checklist.md` | every task by phase, ticked as PRs land, owner tasks marked *Matias* | a PR finishes a task, or a new task appears |
 | `standards.md` | engineering standards, incl. how we work with AI agents | a convention changes (ask the owner first) |
 | `features.md` | every dataset column | `features.sql` changes |
 | `decisions/` | ADRs, one decision per file, plus `README.md` (index and template) | a decision is made (`/adr`) |
