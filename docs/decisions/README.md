@@ -14,6 +14,7 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | [0007](0007-layered-repo-memory.md) | Layered repo memory for AI-assisted development: map, module context, ADRs, checkpoint | Accepted; file names amended by 0009 |
 | [0008](0008-classical-model-evaluation.md) | Classical models: held-out players at the latest cutoff, selection and Platt calibration inside training, bootstrap comparison with the recency rule | Accepted |
 | [0009](0009-agents-md.md) | Context files are named `AGENTS.md`, the cross-tool format, instead of `CLAUDE.md` | Accepted |
+| [0010](0010-break-features.md) | Break features tried under a rule set in advance; not met, so removed | Accepted |
 
 ## Template
 

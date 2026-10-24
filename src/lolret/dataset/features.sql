@@ -53,33 +53,6 @@ activity AS (
     GROUP BY pc.platform, pc.puuid, pc.cutoff
 ),
 
--- The weeks of the 8 before the cutoff, each next to the week before it, to count returns
--- after a week without games.
-weeks AS (
-    SELECT
-        pc.platform,
-        pc.puuid,
-        pc.cutoff,
-        b.games,
-        lag(b.games) OVER (
-            PARTITION BY pc.platform, pc.puuid, pc.cutoff ORDER BY b.bucket_start
-        ) AS games_week_before
-    FROM player_cutoffs AS pc
-    JOIN buckets AS b
-        ON b.platform = pc.platform AND b.puuid = pc.puuid
-        AND b.bucket_start >= pc.cutoff - INTERVAL 56 DAY AND b.bucket_end <= pc.cutoff
-),
-
-returns AS (
-    SELECT
-        platform,
-        puuid,
-        cutoff,
-        count(*) FILTER (WHERE games > 0 AND games_week_before = 0)::INTEGER AS returns_8w
-    FROM weeks
-    GROUP BY platform, puuid, cutoff
-),
-
 -- The 20 most recent games that ended at or before the cutoff. rn = 1 is the most recent.
 recent AS (
     SELECT
@@ -117,12 +90,9 @@ recent_stats AS (
         avg((queue_id = 450)::INT) AS aram_share,
         count(DISTINCT champion_id)::DOUBLE / count(*) AS champion_diversity,
         median(gap_hours) AS gap_hours_median,
-        max(gap_hours) / 24.0 AS longest_gap_days,
         -- A session ends after a break of more than an hour. The last session starts at the
         -- most recent game that follows such a break (or that has no earlier game in view).
-        (min(rn) FILTER (WHERE gap_hours > 1 OR gap_hours IS NULL))::INTEGER AS last_session_games,
-        -- Account levels only go up, so the highest is the one at the most recent game.
-        max(summoner_level) AS summoner_level
+        (min(rn) FILTER (WHERE gap_hours > 1 OR gap_hours IS NULL))::INTEGER AS last_session_games
     FROM recent
     GROUP BY platform, puuid, cutoff
 ),
@@ -156,7 +126,6 @@ SELECT
     a.games_15_28d,
     a.games_29_56d,
     a.active_weeks_8w,
-    coalesce(rt.returns_8w, 0) AS returns_8w,
     coalesce(s.recent_games, 0) AS recent_games,
     s.days_since_last_game,
     s.win_rate,
@@ -171,15 +140,10 @@ SELECT
     s.aram_share,
     s.champion_diversity,
     s.gap_hours_median,
-    s.longest_gap_days,
-    -- How the current break compares with the longest one before it (floored at an hour).
-    s.days_since_last_game / greatest(s.longest_gap_days, 1 / 24.0) AS break_vs_longest_gap,
     s.last_session_games,
-    r.main_role_share,
-    s.summoner_level
+    r.main_role_share
 FROM player_cutoffs AS pc
 JOIN activity AS a USING (platform, puuid, cutoff)
-LEFT JOIN returns AS rt USING (platform, puuid, cutoff)
 LEFT JOIN recent_stats AS s USING (platform, puuid, cutoff)
 LEFT JOIN roles AS r USING (platform, puuid, cutoff)
 ORDER BY pc.platform, pc.puuid, pc.cutoff

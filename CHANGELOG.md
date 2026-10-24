@@ -2,6 +2,16 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-24] Break features tried and dropped
+
+### Added
+- ADR 0010: four features aimed at telling a break from quitting (`returns_8w`,
+  `longest_gap_days`, `break_vs_longest_gap`, `summoner_level`), tried under a rule set before
+  training. LightGBM's PR-AUC rose from 0.464 to 0.476, but neither part of the rule was met,
+  so the features were removed. The code stays in commit `40b421a`.
+- The dataset notes now ask for the keep rule to be written down before training with a new
+  feature.
+
 ## [2026-10-24] Task checklist
 
 ### Added

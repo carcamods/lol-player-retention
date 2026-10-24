@@ -1,6 +1,6 @@
 # 0010: Break features, kept only if they pass a rule set in advance
 
-**Status:** Accepted, 2026-10-24
+**Status:** Accepted, 2026-10-24. Result: the rule was not met, so the features were removed.
 
 ## Context
 
@@ -40,11 +40,26 @@ set:
 
 Otherwise they are removed, this ADR records the negative result, and work moves to Phase 4b.
 
+## Result (run `v1`, 2026-10-24)
+
+Same split, folds, parameters and round selection as ADR 0008; only the columns differ.
+
+- **Rule 1 not met.** With the features, LightGBM's PR-AUC rises from 0.464 to 0.476, against
+  0.455 for the recency rule. The difference from the rule is +0.022 (95% CI -0.025 to +0.069).
+- **Rule 2 not met.** Among the 342 test examples idle 7 to 28 days (140 churned), PR-AUC goes
+  from 0.521 to 0.535: +0.014 (95% CI -0.019 to +0.040).
+- Every metric moved the right way (ROC-AUC 0.825 to 0.831, Brier 0.118 to 0.116), so the
+  features carry a little signal, but not enough to resolve with 200 test churners.
+
+The features were removed. The implementation stays in commit `40b421a`, with its tests. The
+leak guard caught a post-cutoff read injected into `returns_8w` and into `summoner_level` on all
+5 seeds. It can be revisited when there is more test data, for example a larger collection run.
+
 ## Consequences
 
-- The dataset gains a column (`summoner_level`) in the matches table, read from the stored
-  match details, so no new API calls are needed.
-- The model's feature list grows from 21 to 25. Model files saved with the old list refuse to
-  load, which is intended.
-- Writing the rule down before training keeps the decision honest. The alternative, trying
+- Nothing changes in the dataset or the models: the feature list stays at 21.
+- The round was cheap: the data was already collected, and a training run takes 10 seconds.
+- The neural nets (Phase 4b) are next. They read the same matches, so this result lowers
+  expectations for them; the model card will report the comparison either way.
+- Writing the rule down before training kept the decision honest. The alternative, trying
   features until one helps, would overfit the test set.

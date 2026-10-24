@@ -34,6 +34,9 @@ explored in `notebooks/eda.ipynb`.
 4. Run the leak guard, then prove it still bites: temporarily make the new feature read past T
    and check the test fails.
 
+Before training with a new feature, write down the result that keeps it, and record the outcome
+either way (ADR 0010: four break features were tried this way and removed).
+
 NULLs are deliberate (for example, no match features when the only recent game was still
 running at T). Imputation belongs to modelling, not here.
 

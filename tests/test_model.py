@@ -30,7 +30,6 @@ from lolret.model.train import (
 CUTOFFS = [datetime(2026, 7, 30), datetime(2026, 8, 27), datetime(2026, 9, 24)]
 DAYS = FEATURES.index("days_since_last_game")
 WIN_RATE = FEATURES.index("win_rate")
-ACTIVITY = FEATURES.index("recent_games")  # the bucket counts come first, never NULL
 
 
 def config(**overrides: Any) -> TrainConfig:
@@ -81,7 +80,7 @@ def write_examples(path: Path, n_players: int = 600, seed: int = 0) -> list[str]
                 "games_0_7d": games,
                 "days_since_last_game": days,
             }
-            for name in FEATURES[ACTIVITY:]:  # match features: sometimes NULL
+            for name in FEATURES[5:]:  # match features: sometimes NULL
                 if rng.random() < 0.05:
                     row[name] = None
             rows.append(row)
@@ -118,7 +117,7 @@ def test_load_keeps_eligible_labelled_rows_with_nan_for_nulls(data_dir: Path) ->
     assert len(examples) == int(keep.sum())
     assert examples.x.shape == (len(examples), len(FEATURES))
     assert np.isnan(examples.x[:, WIN_RATE]).any()
-    assert not np.isnan(examples.x[:, :ACTIVITY]).any()  # activity counts are never NULL
+    assert not np.isnan(examples.x[:, :5]).any()  # activity counts are never NULL
     assert set(np.unique(examples.y)) == {0, 1}
 
 
