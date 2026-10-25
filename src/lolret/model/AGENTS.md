@@ -21,6 +21,8 @@ beats the recency rule yet. A test set with fewer than 200 churners marks the mo
   and `train_and_evaluate`, which writes `data/models/<dataset>/`: `models.json`,
   `lightgbm.txt`, `metrics.json`, `model_card.md`.
 - `card.py`: `render_model_card` from the metrics dict.
+- `candidates.py`: `CANDIDATES`, `load_candidates`, `CandidateGBM` (LightGBM on the 21
+  features plus the candidates, same protocol) and `evaluate_candidates` (ADR 0013).
 
 ## Rules that must not break
 

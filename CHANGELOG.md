@@ -2,6 +2,21 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Candidate features for the forward test
+
+### Added
+- ADR 0013: five candidate features (the four break features of ADR 0010, plus
+  `repeated_teammates`, found in a training-only look at social ties) in `candidates.sql` and
+  `candidates.parquet`, under the same timing rules and leak guard. They stay out of the
+  model's 21 features until the forward test decides.
+- `lolret train-candidates`: on the 4a test, LightGBM with them scored 0.458 against 0.464,
+  level; recorded, deciding nothing.
+- `lolret forward predict-candidates`: LightGBM with the candidates enters the forward test as
+  a later entry with its own committed hash.
+
+### Changed
+- Extraction keeps each match's summoner level and the teammates' PUUIDs (under `data/`).
+
 ## [2026-10-25] Neural nets
 
 ### Added

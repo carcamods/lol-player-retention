@@ -42,6 +42,9 @@ to +0.055). Its probabilities are well calibrated, and its strongest signals are
 last 7 days and days since the last game. The neural nets ([ADR 0012](docs/decisions/0012-neural-nets.md))
 are level with LightGBM: the GRU looked slightly better inside training and slightly worse
 here, and a 200-churner test set can't separate them, so LightGBM stays the headline model.
+Five candidate features (the break features below, account level, and how many teammates a
+player keeps queueing with) are level too, at 0.458; the forward test decides whether they
+join ([ADR 0013](docs/decisions/0013-candidate-features.md)).
 
 The [exploratory analysis](notebooks/eda.ipynb) shows why. 69% of churners hadn't played for a
 week or more at the cutoff, and among those players no feature separates a break from quitting
@@ -59,7 +62,8 @@ before 2026-10-22, whether they would play in the 4 weeks after it. The predicti
 on 2026-10-25, before any of those weeks was collected, and the file's SHA-256 is committed in
 [`configs/forward.yaml`](configs/forward.yaml), so they can't be changed after the fact. The
 outcomes are collected after 2026-11-19. The question, set before freezing: does LightGBM beat
-the recency rule on them?
+the recency rule on them? Two later entries, frozen the same way before any outcome was
+collected, ask whether the neural nets or five candidate features beat LightGBM.
 
 ## Data flow
 
@@ -167,7 +171,8 @@ the same commands on Google Colab.
 ```bash
 uv run lolret forward collect -c configs/forward.yaml            # features at the cutoff (~4-6 h)
 uv run lolret forward predict -c configs/forward.yaml            # freeze; commit the printed hash
-uv run lolret forward predict-nn -c configs/forward.yaml         # optional later entry: the nets
+uv run lolret forward predict-nn -c configs/forward.yaml         # later entry: the nets
+uv run lolret forward predict-candidates -c configs/forward.yaml # later entry: candidate features
 uv run lolret forward collect -c configs/forward.yaml --labels   # after the 28 days (~1.5 h)
 uv run lolret forward score   -c configs/forward.yaml            # -> data/forward/<name>/report.md
 ```

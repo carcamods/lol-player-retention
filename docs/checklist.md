@@ -52,6 +52,8 @@ else is code or docs, delivered as a PR that Matias reviews.
 - [x] Decide: features that tell a break from quitting first, or straight to 4b. Features
       first.
 - [x] Break-feature round under a rule set in advance: not met, features removed (ADR 0010).
+- [x] Candidate features (break features, account level, repeated teammates) kept apart and
+      entered in the forward test, which decides whether they join (ADR 0013).
 
 ## Phase 4b: neural nets
 
@@ -77,6 +79,7 @@ of waiting, and launch doesn't wait for it.
       the predictions provably weren't changed after the fact. Cutoff 2026-10-22, 3,718
       players, frozen 2026-10-25 (ADR 0011, `configs/forward.yaml`).
 - [x] Enter the 4b neural nets as a later entry, before the labels are collected (ADR 0012).
+- [x] Enter LightGBM with five candidate features as a later entry (ADR 0013).
 - [ ] After 2026-11-19 00:00 UTC: `lolret forward collect --labels` (about 1.5 h), then
       `lolret forward score`. *Run: Matias*
 - [ ] Add the result to the model card and the site.

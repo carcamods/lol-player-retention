@@ -49,6 +49,12 @@ model card keep the 21 features until the forward test decides.
 3. The entry is frozen as `candidates` in `configs/forward.yaml`, after the ladder's hash and
    before any label is collected.
 
+## Result on the 4a test set (for the record, rule 2)
+
+LightGBM with the candidates scored 0.458 PR-AUC (ROC-AUC 0.826) against 0.464 (0.825) for
+the ladder's LightGBM: a difference of -0.006 (95% CI -0.032 to +0.019). No sign of a gain
+there, which, with this test set's noise, says little either way. The forward test decides.
+
 ## Consequences
 
 - New `candidates` table and file, `lolret train-candidates`, and
