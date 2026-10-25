@@ -72,8 +72,12 @@ def game(puuid: str, i: int, end: datetime, *, win: bool, **overrides: Any) -> R
     return row | overrides
 
 
-def examples(
-    players: list[Row], buckets: list[Row], matches: list[Row], cutoffs: list[datetime]
+def built(
+    players: list[Row],
+    buckets: list[Row],
+    matches: list[Row],
+    cutoffs: list[datetime],
+    table: str = "examples",
 ) -> list[Row]:
     tables = Tables(
         pa.Table.from_pylist(players, PLAYERS_SCHEMA),
@@ -82,9 +86,21 @@ def examples(
     )
     con = duckdb.connect()
     build_examples(con, tables, cutoffs)
-    cursor = con.execute("SELECT * FROM examples")
+    cursor = con.execute(f"SELECT * FROM {table}")  # noqa: S608 (a test-chosen table name)
     columns = [d[0] for d in cursor.description]
     return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
+
+
+def examples(
+    players: list[Row], buckets: list[Row], matches: list[Row], cutoffs: list[datetime]
+) -> list[Row]:
+    return built(players, buckets, matches, cutoffs)
+
+
+def sequences(
+    players: list[Row], buckets: list[Row], matches: list[Row], cutoffs: list[datetime]
+) -> list[Row]:
+    return built(players, buckets, matches, cutoffs, table="sequences")
 
 
 def test_features_and_label_for_a_hand_built_player() -> None:
@@ -117,6 +133,26 @@ def test_features_and_label_for_a_hand_built_player() -> None:
     assert a["main_role_share"] == pytest.approx(2 / 3)
     # Games 1 and 2 are 30 minutes apart; game 3 ended 20.5 h before game 2 started.
     assert a["last_session_games"] == 2
+
+
+def test_sequence_for_a_hand_built_player() -> None:
+    h = timedelta(hours=1)
+    matches = [
+        game("A", 1, T - 2 * h, win=False, kills=2, deaths=4, assists=2),
+        game("A", 2, T - 3 * h, win=False, champion_id=2),
+        game("A", 3, T - 24 * h, win=True, champion_id=2, team_position="JUNGLE"),
+        game("A", 4, T + 20 * timedelta(minutes=1), win=False),  # still running at T
+    ]
+
+    rows = sequences([player("A")], weeks("A", {-1: 4}), matches, [T])
+
+    assert [r["rn"] for r in rows] == [1, 2, 3]
+    assert [r["hours_before_cutoff"] for r in rows] == pytest.approx([2, 3, 24])
+    # Game 1 started 30 minutes after game 2 ended; game 2 started 20.5 h after game 3 ended.
+    assert [r["gap_hours"] for r in rows[:2]] == pytest.approx([0.5, 20.5])
+    assert rows[2]["gap_hours"] is None  # the oldest game in view
+    assert [r["same_champion"] for r in rows] == [False, True, None]
+    assert (rows[0]["win"], rows[0]["kills"], rows[2]["team_position"]) == (False, 2, "JUNGLE")
 
 
 def test_a_player_with_no_games_is_ineligible_with_empty_features() -> None:
@@ -188,6 +224,25 @@ def test_leak_guard_features_only_see_data_before_the_cutoff(seed: int) -> None:
             for column, value in row_full.items():
                 if column == LABEL:
                     continue
+                assert same(value, row_truncated[column]), (cutoff, row_full["puuid"], column)
+
+
+@pytest.mark.parametrize("seed", range(5))
+def test_leak_guard_sequences_only_see_data_before_the_cutoff(seed: int) -> None:
+    """The same guard for the neural nets' match sequences."""
+    players, buckets, matches = random_world(seed)
+
+    for cutoff in [T - 8 * WEEK, T - 4 * WEEK, T]:
+        full = sequences(players, buckets, matches, [cutoff])
+        truncated = sequences(
+            players,
+            [b for b in buckets if b["bucket_end"] <= cutoff],
+            [m for m in matches if m["game_end"] <= cutoff],
+            [cutoff],
+        )
+        assert len(full) == len(truncated)
+        for row_full, row_truncated in zip(full, truncated, strict=True):
+            for column, value in row_full.items():
                 assert same(value, row_truncated[column]), (cutoff, row_full["puuid"], column)
 
 

@@ -1,0 +1,17 @@
+# Neural nets (Phase 4b). Design: docs/decisions/0004-neural-nets-on-colab.md, 0012-neural-nets.md
+# Run:    uv run lolret train-nn -c configs/train_nn.yaml    (after `lolret train`)
+# Output: data/models/<dataset>/nn/ (weights + nn.json); adds the nets to metrics.json and the
+#         model card next to the classical models.
+train: configs/train.yaml   # dataset, test split, folds, bootstrap and seed: shared with Phase 4a
+
+max_epochs: 200
+patience: 15                # epochs without a better validation loss before stopping
+batch_size: 256
+learning_rate: 0.001
+weight_decay: 0.0001
+dropout: 0.2
+seeds: 5                    # independently initialised nets per model, averaged
+
+mlp_hidden: [64, 32]        # MLP on the 21 tabular features
+gru_hidden: 32              # GRU over the last 20 matches...
+static_hidden: 32           # ...joined with a layer over the tabular features

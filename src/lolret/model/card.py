@@ -9,6 +9,9 @@ LABELS = {
     "recency": "Recency rule",
     "logreg": "Logistic regression",
     "lightgbm": "LightGBM",
+    "mlp": "MLP",
+    "gru": "GRU",
+    "lightgbm_gru": "LightGBM + GRU average",
 }
 PRELIMINARY_BELOW = 200  # test churners; fewer means a partial dataset and wide intervals
 TOP_FEATURES = 10
@@ -42,6 +45,47 @@ def verdict(name: str, comparison: dict[str, Any], baseline: str) -> str:
         f"- {model} does **not clearly beat** the {base}: difference {_signed(diff)} PR-AUC "
         f"(95% CI {span})."
     )
+
+
+def _against_lightgbm(name: str, comparison: dict[str, Any]) -> str:
+    diff, ci = comparison["pr_auc_diff"], comparison["pr_auc_diff_ci"]
+    model = LABELS.get(name, name)
+    if ci is None:
+        return f"- {model}: PR-AUC difference {_signed(diff)} (no interval)."
+    span = f"95% CI {_signed(ci[0])} to {_signed(ci[1])}"
+    if ci[0] > 0:
+        return f"- {model} **beats** LightGBM by {_signed(diff)} PR-AUC ({span})."
+    if ci[1] < 0:
+        return f"- {model} is **worse** than LightGBM by {-diff:.3f} PR-AUC ({span})."
+    return f"- {model} is **level** with LightGBM: difference {_signed(diff)} PR-AUC ({span})."
+
+
+def _neural_nets(m: dict[str, Any]) -> list[str]:
+    """The section `lolret train-nn` adds; empty before it has run."""
+    if "nn" not in m:
+        return []
+    nn, sel = m["nn"], m["nn"]["selection"]
+    cfg = nn["config"]
+    hidden = ", ".join(str(h) for h in cfg["mlp_hidden"])
+    return [
+        "## Neural nets",
+        "",
+        f"- **MLP:** hidden layers of {hidden} units on the same {len(FEATURES)} features, "
+        f"prepared like the logistic regression's; {sel['mlp']['epochs']} epochs.",
+        f"- **GRU:** reads the last 20 matches that finished before the cutoff, oldest first "
+        "(result, kills, deaths, assists, duration, queue, role, time to the cutoff, gap since "
+        f"the previous game). Its last state ({cfg['gru_hidden']} units) joins a layer over the "
+        f"{len(FEATURES)} features; {sel['gru']['epochs']} epochs.",
+        f"- **Both:** {cfg['seeds']} nets averaged, each early-stopped on the same "
+        "player-grouped folds as the classical models, whose out-of-fold predictions also fit "
+        "the Platt scaling. The test set chooses nothing.",
+        "- **LightGBM + GRU average:** the mean of the two calibrated probabilities.",
+        "",
+        "**Against LightGBM**, paired on the same resamples:",
+        "",
+        *(_against_lightgbm(name, c) for name, c in nn["vs_lightgbm"].items()),
+        "",
+    ]
 
 
 def render_model_card(m: dict[str, Any]) -> str:
@@ -139,6 +183,7 @@ def render_model_card(m: dict[str, Any]) -> str:
         f"- **Inputs:** {len(FEATURES)} point-in-time features. Never ladder wins, losses, LP or "
         "flags, which are measured after T.",
         "",
+        *_neural_nets(m),
         "## Limitations",
         "",
         "- Players are sampled from the current ladder, which under-represents players who quit "
