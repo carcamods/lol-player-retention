@@ -435,3 +435,51 @@ def forward_predict_candidates(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -
     )
     typer.echo(f"Add this under entries in {config} and commit it before collecting labels:")
     typer.echo(f"  {ENTRY}: {summary.sha256}")
+
+
+@app.command()
+def predict(
+    riot_id: Annotated[str, typer.Option("--riot-id", help="The player's Riot ID, Name#TAG.")],
+    platform: Annotated[
+        str, typer.Option("--platform", "-p", help="Their server: na1, euw1, kr...")
+    ] = "na1",
+    config: TrainConfigOption = DEFAULT_TRAIN_CONFIG,
+) -> None:
+    """Predict, live, whether one player stops playing in the next 28 days.
+
+    Uses your own Riot key and the models from `lolret train`. Features are built by the same
+    code as in training, as of today 00:00 UTC.
+    """
+    from lolret.live.predict import (
+        PlayerNotFoundError,
+        fetch_live,
+        format_prediction,
+        predict_cached,
+    )
+    from lolret.model.models import Ladder
+    from lolret.model.train import models_dir
+
+    settings = get_settings()
+    api_key = _require_key(settings)
+    model_dir = models_dir(settings.data_dir, load_train_config(config).dataset)
+    if not (model_dir / "models.json").exists():
+        log.error("No trained models in %s. Run `lolret train` first.", model_dir)
+        raise typer.Exit(1)
+    ladder = Ladder.load(model_dir)
+    cache = settings.data_dir / "raw" / "live.sqlite"
+
+    async def fetch() -> tuple[str, datetime]:
+        limits = parse_limits(settings.riot_rate_limits)
+        async with RiotClient(api_key, limits=limits) as client:
+            return await fetch_live(client, riot_id, platform, cache, now=datetime.now(UTC))
+
+    try:
+        puuid, cutoff = asyncio.run(fetch())
+        result = predict_cached(puuid, riot_id, platform, cutoff, ladder, cache)
+    except (PlayerNotFoundError, ValueError) as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    except RiotAuthError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    typer.echo(format_prediction(result))

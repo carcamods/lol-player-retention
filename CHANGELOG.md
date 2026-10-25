@@ -2,6 +2,15 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Live prediction for one player
+
+### Added
+- `lolret predict --riot-id Name#TAG --platform <server>` (FR6): looks the player up with the
+  developer's key, fetches their last 8 weeks into a day cache, builds the features with the
+  training code (`extract` and `features.sql`) as of today 00:00 UTC, and prints the ladder's
+  churn probability with its three biggest SHAP drivers. The PUUID is never shown.
+- `RiotEndpoints.account_by_riot_id` (account-v1) and `account_region_for`.
+
 ## [2026-10-25] Candidate features for the forward test
 
 ### Added

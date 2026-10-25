@@ -15,6 +15,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from types import TracebackType
 from typing import Any, Self
+from urllib.parse import quote
 
 import httpx
 
@@ -72,6 +73,11 @@ class RiotEndpoints:
 
     async def match(self, region: str, match_id: str) -> RiotResponse:
         return await self.get(region, f"/lol/match/v5/matches/{match_id}")
+
+    async def account_by_riot_id(self, region: str, game_name: str, tag_line: str) -> RiotResponse:
+        """The account (with its puuid) for a Riot ID `game_name#tag_line`; 404 if none."""
+        name, tag = quote(game_name, safe=""), quote(tag_line, safe="")
+        return await self.get(region, f"/riot/account/v1/accounts/by-riot-id/{name}/{tag}")
 
 
 class RiotClient(RiotEndpoints):

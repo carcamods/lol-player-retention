@@ -111,7 +111,7 @@ All settings come from environment variables or a git-ignored `.env`
 
 | Variable | Required | Description |
 |---|---|---|
-| `RIOT_API_KEY` | For `collect` / `predict` | Key from [developer.riotgames.com](https://developer.riotgames.com) |
+| `RIOT_API_KEY` | For `collect`, `forward collect` and `predict` | Key from [developer.riotgames.com](https://developer.riotgames.com) |
 | `RIOT_RATE_LIMITS` | No | Per-routing-value limits, default `20:1,100:120` (personal/dev key) |
 | `DISCORD_WEBHOOK_URL` | No | Pinged when a `collect` run ends |
 | `DATA_DIR` | No | Local data directory, default `data` |
@@ -180,6 +180,18 @@ uv run lolret forward score   -c configs/forward.yaml            # -> data/forwa
 Each step refuses to run out of order: no labels before the hash is committed, no predictions
 once labels exist, and no score if a file doesn't match its hash.
 
+**Predict for one player, live** (needs `RIOT_API_KEY` and `lolret train`):
+
+```bash
+uv run lolret predict --riot-id "Name#TAG" --platform euw1
+```
+
+It fetches the player's last 8 weeks (about 30 requests, cached for the day), builds the
+features with the same code as training, as of today 00:00 UTC, and prints the churn
+probability with its three biggest drivers. Players who haven't played in the last 4 weeks
+aren't covered. The public site never calls the API
+([ADR 0002](docs/decisions/0002-static-snapshot-site.md)).
+
 **Collect data** (needs `RIOT_API_KEY`):
 
 ```bash
@@ -191,7 +203,7 @@ uv run lolret status  -c configs/collect.yaml         # progress, from another t
 Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
 `1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
 
-Pipeline commands still to come: `export`, `predict`.
+Pipeline commands still to come: `export`.
 
 ## Scheduled jobs
 

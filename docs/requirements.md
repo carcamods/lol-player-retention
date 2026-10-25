@@ -116,5 +116,5 @@ before the current split started. All cutoffs are chosen after the split start.
 | 4a | Classical models, evaluation, model card (FR3) | Done (ADR 0008); no model clearly beats the recency rule; break features tried and dropped (ADR 0010) |
 | 4b | Neural nets on Colab (FR3b) | Done (ADR 0012): MLP and GRU trained on CPU, level with LightGBM; entered in the forward test |
 | 4c | Forward test: predict at today's cutoff, collect again 28 days later, compare (ADR 0006) | Started (ADR 0011): predictions at 2026-10-22 frozen on 2026-10-25; scored after 2026-11-19 |
-| 5 | Snapshot export, Quarto site, `predict` CLI, go public (FR4–FR6) | — |
+| 5 | Snapshot export, Quarto site, `predict` CLI, go public (FR4–FR6) | Started: `predict` CLI done |
 | 6 | Production key and live lookup (FR7) | Later |

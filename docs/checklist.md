@@ -92,7 +92,8 @@ of waiting, and launch doesn't wait for it.
 - [ ] "Frozen snapshot, not a live product" banner and Riot's legal disclaimer on every page.
 - [ ] Site works on mobile.
 - [ ] `pages.yml` deploys the site to GitHub Pages.
-- [ ] `lolret predict --riot-id Name#TAG` with the developer's own key (FR6).
+- [x] `lolret predict --riot-id Name#TAG` with the developer's own key (FR6).
+- [ ] Try `lolret predict` on your own Riot ID once the collection isn't running. *Matias*
 - [ ] README tells the story in 30 seconds: the 2024 leak, the fix, the result, the demo link.
 - [ ] Full-history gitleaks scan returns zero findings.
 - [ ] Make the repo public and turn on branch protection (PR and green CI to merge). *Matias*
