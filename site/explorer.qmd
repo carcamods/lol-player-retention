@@ -52,7 +52,7 @@ features = ({
   champion_diversity: "Champion variety", gap_hours_median: "Median hours between games",
   last_session_games: "Games in the last session", main_role_share: "Share in main role"
 })
-fmt = (v) => v === null ? "unknown" : Number.isInteger(v) ? v : v.toFixed(2)
+fmt = (v) => v === null ? "unknown" : Number.isInteger(v) ? v : +v.toFixed(2)
 player === null ? html`<p class="small-note">No player matches these filters.</p>` : html`
 <div class="stat-row">
   <div class="stat"><div class="value">${pct(player.churn)}</div>
