@@ -12,8 +12,9 @@ is the owner's call: `pages.yml` runs only by hand.
 
 - `_quarto.yml`: navbar, Riot's legal disclaimer in the footer, theme, the banner include.
 - `assets/banner.html`: the "frozen snapshot, not a live product" banner on every page.
-- `assets/style.scss`: the palette (same as the EDA charts) and the stat, outcome and driver
-  styles.
+- `assets/light.scss`, `assets/dark.scss`: each theme's colours (Bootstrap defaults and CSS
+  variables); `assets/base.scss`: the shared rules (banner, stats, outcome, drivers), which use
+  only the variables.
 - `index.qmd`, `explorer.qmd`, `model-card.qmd`, `developers.qmd`: the pages. The data parts
   are Observable JS cells reading the snapshot.
 
@@ -49,4 +50,7 @@ Quarto isn't a Python dependency: install it from quarto.org. On Windows, don't 
 
 - Charts use Observable Plot. Axis labels sit below the ticks (`labelAnchor: "center"`, a
   larger `marginBottom`), or they collide with the last tick labels.
-- Light theme only for now; a dark theme needs its own chart colours, not an automatic flip.
+- Dark mode follows the reader's system setting and the navbar toggle. Charts read the theme
+  through a `dark` observer cell and take colours from `pal`, so they re-render on a toggle;
+  never hard-code a colour in a chart. Captions say "bright" and "muted", not "dark" and
+  "light", so they hold in both themes.

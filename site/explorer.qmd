@@ -11,6 +11,16 @@ around the cutoff.
 //| echo: false
 snapshot = FileAttachment("data/snapshot.json").json()
 players = snapshot.players
+dark = Generators.observe((notify) => {
+  const isDark = () => document.body.classList.contains("quarto-dark")
+  notify(isDark())
+  const watch = new MutationObserver(() => notify(isDark()))
+  watch.observe(document.body, {attributes: true, attributeFilter: ["class"]})
+  return () => watch.disconnect()
+})
+pal = dark
+  ? ({ink: "#ecebe7", ink2: "#b8b6b0", base: "#5d5c58", blue: "#5d9df0", blueLight: "#2f5c94", surface: "#17181a"})
+  : ({ink: "#0b0b0b", ink2: "#52514e", base: "#c3c2b7", blue: "#2a78d6", blueLight: "#9ec5f4", surface: "#fcfcfb"})
 tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"]
 title = (s) => s.charAt(0) + s.slice(1).toLowerCase()
 viewof region = Inputs.select(["All regions", ...new Set(players.map((p) => p.region))], {label: "Region"})
@@ -90,21 +100,21 @@ Plot.plot({
   x: {label: "Weeks from the cutoff", labelAnchor: "center", labelOffset: 38,
     domain: [-snapshot.meta.weeks.before, snapshot.meta.weeks.after], ticks: 12},
   y: {label: "Games", grid: true, nice: true},
-  style: {background: "transparent", color: "#52514e", fontSize: "13px"},
+  style: {background: "transparent", color: pal.ink2, fontSize: "13px"},
   marks: [
     Plot.rectY(weeks, {x1: "week", x2: (d) => d.week + 1, y: "games", insetLeft: 2, insetRight: 2,
-      fill: (d) => d.week < 0 ? "#2a78d6" : "#9ec5f4", rx: 3}),
-    Plot.ruleY([0], {stroke: "#c3c2b7"}),
-    Plot.ruleX([0], {stroke: "#0b0b0b", strokeDasharray: "4,3"}),
-    Plot.text([{x: 0}], {x: "x", frameAnchor: "top", dx: 6, text: () => "cutoff", textAnchor: "start", fill: "#52514e"}),
+      fill: (d) => d.week < 0 ? pal.blue : pal.blueLight, rx: 3}),
+    Plot.ruleY([0], {stroke: pal.base}),
+    Plot.ruleX([0], {stroke: pal.ink, strokeDasharray: "4,3"}),
+    Plot.text([{x: 0}], {x: "x", frameAnchor: "top", dx: 6, text: () => "cutoff", textAnchor: "start", fill: pal.ink2}),
     Plot.tip(weeks, Plot.pointerX({x: (d) => d.week + 0.5, y: "games",
       title: (d) => `Week ${d.week >= 0 ? "+" : ""}${d.week} (${d.when}): ${d.games} games`}))
   ]
 })
 ```
 
-<p class="small-note">Dark bars are what the model saw; light bars are the 4 weeks it was
-predicting. A player "stopped" if all four light bars are empty.</p>
+<p class="small-note">Bright bars are what the model saw; muted bars are the 4 weeks it was
+predicting. A player "stopped" if all four muted bars are empty.</p>
 
 ### All matching players
 

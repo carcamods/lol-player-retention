@@ -28,7 +28,10 @@ website:
 
 format:
   html:
-    theme: [cosmo, assets/style.scss]
+    theme:
+      light: [cosmo, assets/light.scss, assets/base.scss]
+      dark: [darkly, assets/dark.scss, assets/base.scss]
+    respect-user-color-scheme: true
     toc: false
     include-before-body: assets/banner.html
     smooth-scroll: true

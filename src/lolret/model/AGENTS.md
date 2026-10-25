@@ -44,6 +44,9 @@ beats the recency rule yet. A test set with fewer than 200 churners marks the mo
 - Reliability bins are equal-count. With tied predictions (a constant model) the bins are
   arbitrary.
 - scikit-learn ships no type stubs; `pyproject.toml` has a mypy override.
+- Tuning LightGBM barely helps. A 40-setting random search inside training (2026-10-25)
+  improved out-of-fold log loss by 0.001-0.002 and PR-AUC by 0.000-0.007 on fresh folds: noise.
+  The hand-set parameters stay; never tune on the test set.
 - Run `v1`'s test set has 200 churners, so PR-AUC intervals are about +/-0.07 wide. Differences
   between models smaller than that aren't resolvable; say so rather than ranking them.
 

@@ -2,6 +2,16 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Dark mode for the site; tuning checked
+
+### Added
+- The site has a dark theme with its own colours, following the reader's system setting and
+  the navbar toggle; charts re-render with dark colours when the theme changes.
+
+### Notes
+- A 40-setting random search over LightGBM's parameters, inside training only, gained at most
+  0.002 log loss and 0.007 PR-AUC on fresh folds. Noise, so the hand-set parameters stay.
+
 ## [2026-10-25] The site builds in CI
 
 ### Added
