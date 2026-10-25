@@ -9,6 +9,8 @@ timeline to show (ADR 0014).
 
 ## Files
 
+- `demo.py`: a random snapshot with the real structure, for building the site in CI
+  (`python -m lolret.export.demo`).
 - `snapshot.py`: `anonymous_ids` (salted-hash order → "Player 0001"...), `forward_summary`
   (the forward test's status, hashes and, once scored, its aggregate results), `export_snapshot`.
 

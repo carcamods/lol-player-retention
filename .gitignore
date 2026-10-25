@@ -6,6 +6,7 @@
 # Data: raw API responses and processed datasets stay local.
 # Only the anonymised snapshot the site needs is published (site/data/).
 data/
+!site/data/
 *.parquet
 *.duckdb
 *.duckdb.wal
@@ -37,6 +38,7 @@ htmlcov/
 site/_site/
 site/.quarto/
 # The snapshot stays local until the owner settles what the site shows (ADR 0014).
+# To publish it, delete the next line and commit site/data/snapshot.json.
 site/data/snapshot.json
 
 # Editors and OS

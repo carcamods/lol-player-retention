@@ -1,0 +1,31 @@
+name: Site
+
+# Builds the Quarto site on a demo snapshot (random values) whenever the site or the export
+# changes, so a broken page fails here instead of on deploy. Deploying is pages.yml, by hand.
+on:
+  pull_request:
+    paths:
+      - "site/**"
+      - "src/lolret/export/**"
+      - ".github/workflows/site.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the site on a demo snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Demo snapshot
+        run: uv run --locked --no-default-groups python -m lolret.export.demo site/data/snapshot.json
+      - uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        with:
+          version: 1.10.19
+      - name: Render
+        run: quarto render site

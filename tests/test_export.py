@@ -3,6 +3,7 @@
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import duckdb
 import pytest
@@ -13,6 +14,7 @@ from test_model import config as train_config
 from typer.testing import CliRunner
 
 from lolret.cli import app
+from lolret.export.demo import demo_snapshot
 from lolret.export.snapshot import anonymous_ids, export_snapshot, forward_summary
 from lolret.forward.config import load_forward
 from lolret.model.data import load_examples, split_by_player_and_time
@@ -164,3 +166,34 @@ def test_the_forward_test_is_reported_as_pending_then_scored(tmp_path: Path) -> 
     assert scored["churned"] == 650
     assert set(scored["metrics"]["lightgbm"]) == {"pr_auc", "pr_auc_ci", "roc_auc", "brier"}
     assert "reliability" not in scored
+
+
+def shape(value: Any) -> Any:
+    """A value's structure: dict keys and element shapes, with numbers and nulls blurred."""
+    if isinstance(value, dict):
+        return {k: shape(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [shape(value[0])] if value else []
+    if isinstance(value, bool):
+        return "bool"
+    return "number" if isinstance(value, int | float) else type(value).__name__
+
+
+def test_the_demo_snapshot_has_the_real_one_s_structure(data_dir: Path, tmp_path: Path) -> None:
+    real = exported(data_dir, b"salt")
+    demo = demo_snapshot(players=20)
+    fwd = load_forward(write_configs(tmp_path, {"ladder": "a" * 64}))
+    out = tmp_path / "data" / "forward" / fwd.name
+    out.mkdir(parents=True)
+    manifest = {"frozen_at": "2026-10-25T07:00:00+00:00", "forward_examples": {"eligible": 9}}
+    (out / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert set(demo) == set(real)
+    assert shape(demo["meta"]) == shape(real["meta"])
+    assert shape(demo["metrics"]["lightgbm"]) == shape(real["metrics"]["lightgbm"])
+    assert shape(demo["vs_recency"]["lightgbm"]) == shape(real["vs_recency"]["lightgbm"])
+    assert shape(demo["train"]) == shape(real["train"])
+    assert shape(demo["players"]) == shape(real["players"])
+    assert shape(demo["by_group"]["tier"]["GOLD"]) == shape(real["by_group"]["tier"]["GOLD"])
+    assert set(demo["by_group"]["region"]) == set(real["by_group"]["region"])
+    assert shape(demo["forward"]) == shape(forward_summary(fwd, tmp_path / "data"))
