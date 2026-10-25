@@ -39,6 +39,7 @@ from lolret.model.evaluate import evaluate, reliability
 
 BASELINE = "recency"
 PRIMARY = "lightgbm"  # the pre-registered comparison: PRIMARY against BASELINE
+LADDER_MODELS = ("majority", "recency", "logreg", "lightgbm")
 LABELLED_FILE = "labelled.parquet"
 RESULTS_FILE = "results.json"
 REPORT_FILE = "report.md"
@@ -100,6 +101,13 @@ def render_report(m: dict[str, Any]) -> str:
     if others:
         lines += ["", "Other comparisons with the recency rule:", ""]
         lines += [verdict(n, m["vs_baseline"][n], BASELINE) for n in others]
+    if m.get("vs_lightgbm"):
+        lines += ["", "Later entries against LightGBM:", ""]
+        for name, c in m["vs_lightgbm"].items():
+            lo, hi = c["pr_auc_diff_ci"] or (float("nan"), float("nan"))
+            lines.append(
+                f"- {label(name)}: {c['pr_auc_diff']:+.3f} PR-AUC (95% CI {lo:+.3f} to {hi:+.3f})."
+            )
     return "\n".join(lines) + "\n"
 
 
@@ -131,9 +139,13 @@ def score_forward(fwd: Forward, data_dir: Path, *, now: datetime) -> ScoreSummar
         raise ForwardError("some eligible players still have no label")
 
     preds = _aligned_predictions(entries, labelled.player)
-    results, vs_baseline = evaluate(
-        labelled.y, preds, baseline=BASELINE, n_boot=fwd.train.bootstrap, seed=fwd.train.seed
-    )
+    common = {"n_boot": fwd.train.bootstrap, "seed": fwd.train.seed}
+    results, vs_baseline = evaluate(labelled.y, preds, baseline=BASELINE, **common)
+    later = [name for name in preds if name not in LADDER_MODELS]
+    vs_lightgbm: dict[str, dict[str, Any]] = {}
+    if later and PRIMARY in preds:
+        _, against = evaluate(labelled.y, preds, baseline=PRIMARY, **common)
+        vs_lightgbm = {name: against[name] for name in later if name in against}
     manifest = json.loads((out_dir / MANIFEST_FILE).read_text(encoding="utf-8"))
     metrics: dict[str, Any] = {
         "name": fwd.name,
@@ -149,6 +161,7 @@ def score_forward(fwd: Forward, data_dir: Path, *, now: datetime) -> ScoreSummar
         "primary": PRIMARY,
         "results": results,
         "vs_baseline": vs_baseline,
+        "vs_lightgbm": vs_lightgbm,
         "reliability": {name: reliability(labelled.y, p) for name, p in preds.items()},
     }
     (out_dir / RESULTS_FILE).write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")

@@ -302,6 +302,33 @@ def forward_predict(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -> None:
     typer.echo(f"  ladder: {summary.sha256}")
 
 
+@forward_app.command("predict-nn")
+def forward_predict_nn(
+    config: ForwardOption = DEFAULT_FORWARD_CONFIG,
+    nn_config: Annotated[
+        Path, typer.Option("--nn-config", help="Neural-net config (YAML).", exists=True)
+    ] = DEFAULT_NN_CONFIG,
+) -> None:
+    """Enter the neural nets in the forward test, after the ladder's hash is committed.
+
+    Runs once, and never once labels exist (ADR 0012).
+    """
+    from lolret.nn.config import load_nn_config  # torch loads only for this command
+    from lolret.nn.forward import NETS, freeze_nn_entry
+
+    settings = get_settings()
+    fwd = _load_forward(config)
+    cfg, _ = load_nn_config(nn_config)
+    try:
+        summary = freeze_nn_entry(fwd, cfg, settings.data_dir, now=datetime.now(UTC))
+    except ForwardError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    log.info("Froze the nets' predictions for %d players in %s.", summary.players, summary.entry)
+    typer.echo(f"Add this under entries in {config} and commit it before collecting labels:")
+    typer.echo(f"  {NETS}: {summary.sha256}")
+
+
 @forward_app.command("score")
 def forward_score(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -> None:
     """Score the frozen predictions against the collected outcomes."""

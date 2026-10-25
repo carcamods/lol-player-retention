@@ -59,14 +59,22 @@ def pending_path(entry: Path) -> Path:
 
 
 def build_forward_examples(
-    store: Store, fwd: Forward, path: Path, *, until: datetime | None
+    store: Store,
+    fwd: Forward,
+    path: Path,
+    *,
+    until: datetime | None,
+    sequences: Path | None = None,
 ) -> Examples:
-    """Features (and, with `until=None`, labels) at the forward cutoff, written to `path`."""
+    """Features (and, with `until=None`, labels) at the forward cutoff, written to `path`;
+    the match sequences too when `sequences` names a file."""
     tables = extract(store, fwd.collect, until=until)
     with duckdb.connect() as con:
         build_examples(con, tables, [fwd.cutoff])
         path.parent.mkdir(parents=True, exist_ok=True)
         con.table("examples").write_parquet(str(path))
+        if sequences is not None:
+            con.table("sequences").write_parquet(str(sequences))
     return load_examples(path, labelled=False)
 
 
