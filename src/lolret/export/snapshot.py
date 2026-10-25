@@ -7,8 +7,9 @@ drivers, and weekly game counts from 8 weeks before the cutoff to 4 weeks after.
 Identifiers: players are numbered "Player 0001", "Player 0002"... in the order of a salted
 SHA-256 of their PUUID. The salt is random for every export and never stored, so a number
 can't be traced back to an account, and two exports number players differently. No PUUID,
-Riot ID or match ID is written. The file goes to `data/snapshot/<dataset>/` and stays there
-until the owner decides to publish it.
+Riot ID or match ID is written. Days since the last game is rounded to a tenth of a day, so it
+can't pin the last game to the minute. The file goes to `data/snapshot/<dataset>/`; publishing
+it is a separate step (copying it into `site/data/`).
 """
 
 import hashlib
@@ -35,6 +36,8 @@ TOP_DRIVERS = 3
 WEEKS_BEFORE, WEEKS_AFTER = 8, 4
 REGIONS = {"na1": "NA", "euw1": "EUW", "kr": "KR"}
 SHOWN = ("majority", "recency", "logreg", "lightgbm", "mlp", "gru", "lightgbm_gru")
+# Decimals per feature where 3 would identify: 0.001 days pins the last game to ~90 seconds.
+DECIMALS = {"days_since_last_game": 1}
 
 
 def snapshot_path(data_dir: Path, dataset: str) -> Path:
@@ -139,7 +142,7 @@ def export_snapshot(
 
     def value(row: int, name: str) -> float | None:
         v = float(test.x[row, FEATURES.index(name)])
-        return None if np.isnan(v) else round(v, 3)
+        return None if np.isnan(v) else round(v, DECIMALS.get(name, 3))
 
     players: list[dict[str, Any]] = []
     for i, player in enumerate(test.player.tolist()):

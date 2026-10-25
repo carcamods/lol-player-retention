@@ -22,8 +22,8 @@ Predicts whether a ranked **League of Legends** player will stop playing in the 
   static site with an explorer of held-out players is ready to publish ([`site/`](site/)).
 
 > **Status: Phase 5 of 6, launch.** Models, forward test, live prediction, snapshot export and
-> the site are built; publishing waits on one privacy decision
-> ([ADR 0014](docs/decisions/0014-snapshot-export.md)). See the
+> the site are built, and the anonymised snapshot is committed
+> ([ADR 0014](docs/decisions/0014-snapshot-export.md)); the site goes live with the repo. See the
 > [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
@@ -87,13 +87,14 @@ collected, ask whether the neural nets or five candidate features beat LightGBM.
 A static [Quarto](https://quarto.org) site in [`site/`](site/) shows the snapshot: an overview of
 the results, an explorer with every held-out player's prediction next to what actually
 happened, the model card and a developer page. It reads only the anonymised snapshot from
-`lolret export` and makes no API calls. It is built locally and not yet deployed (see
-[ADR 0014](docs/decisions/0014-snapshot-export.md) for the one decision left before publishing).
+`lolret export` and makes no API calls. The snapshot is committed in `site/data/` (what it
+shows and why: [ADR 0014](docs/decisions/0014-snapshot-export.md)); the site isn't deployed
+yet.
 
 ```bash
-uv run lolret export -c configs/train.yaml
-cp data/snapshot/v1/snapshot.json site/data/snapshot.json
-quarto preview site
+quarto preview site                                          # on the committed snapshot
+uv run lolret export -c configs/train.yaml                   # to refresh it, then:
+cp data/snapshot/v1/snapshot.json site/data/snapshot.json    # and commit it
 ```
 
 ## Data flow
@@ -245,7 +246,7 @@ frozen hashes, until it is scored, then its results, so the site updates with on
 
 The 1,104 held-out players, numbered "Player 0001"... by a salt that is drawn per export and
 never stored, with each prediction, the outcome, the top drivers and weekly activity. It stays
-under `data/` until it is deliberately copied into the site
+under `data/` until it is copied into `site/data/` and committed, which publishes it
 ([ADR 0014](docs/decisions/0014-snapshot-export.md)).
 
 ## Scheduled jobs

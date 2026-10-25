@@ -82,7 +82,8 @@ of waiting, and launch doesn't wait for it.
 - [x] Enter LightGBM with five candidate features as a later entry (ADR 0013).
 - [ ] After 2026-11-19 00:00 UTC: `lolret forward collect --labels` (about 1.5 h), then
       `lolret forward score`. *Run: Matias*
-- [ ] Add the result to the model card and the site.
+- [ ] Add the result to the model card and the site: `lolret export`, copy the snapshot into
+      `site/data/`, commit.
 
 ## Phase 5: launch
 
@@ -90,15 +91,17 @@ of waiting, and launch doesn't wait for it.
       ADR 0014).
 - [x] Test that no Riot ID or PUUID survives the export (and the `v1` export checked
       against all 6,048 PUUIDs).
-- [ ] Decide how much of the weekly timeline the site shows: as is, coarsened, or only the
-      weeks before the cutoff (ADR 0014). *Matias*
+- [x] Decide how much of the weekly timeline the site shows: as is (2026-10-25, ADR 0014).
+      *Matias*
 - [x] Quarto site: Overview, Explorer, Model card, Developers (FR5), built on the snapshot.
 - [x] "Frozen snapshot, not a live product" banner and Riot's legal disclaimer on every page.
 - [x] Site works on mobile: no horizontal scroll at 390 px.
-- [ ] Commit the snapshot to `site/data/` once the timeline question is settled. *Matias*
+- [x] Commit the snapshot to `site/data/`, with days since the last game rounded to a tenth
+      of a day (ADR 0014).
 - [x] CI builds the site on a demo snapshot on every PR that touches it (`site.yml`).
 - [x] `pages.yml` deploys the site to GitHub Pages, run by hand only.
-- [ ] First deploy: commit the snapshot, set Pages' source to GitHub Actions, run `pages.yml`. *Matias*
+- [ ] First deploy: set Pages' source to GitHub Actions, run `pages.yml` (after the repo is
+      public, unless the plan has private Pages). *Matias*
 - [x] `lolret predict --riot-id Name#TAG` with the developer's own key (FR6).
 - [x] `lolret predict` checked against the real API on three sampled players, one per region
       (2026-10-25; no identifier printed).

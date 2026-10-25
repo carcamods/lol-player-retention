@@ -68,6 +68,15 @@ def test_the_snapshot_has_every_held_out_player_and_no_identifier(data_dir: Path
     assert snap["train"]["examples"] > 0
 
 
+def test_days_since_the_last_game_is_rounded_to_a_tenth(data_dir: Path) -> None:
+    players = exported(data_dir, b"salt")["players"]
+    values = [p["days_since_last_game"] for p in players] + [
+        d["value"] for p in players for d in p["drivers"] if d["feature"] == "days_since_last_game"
+    ]
+    assert values
+    assert all(v is None or round(v, 1) == v for v in values)
+
+
 def test_numbers_depend_on_the_salt_only(data_dir: Path) -> None:
     first, same = exported(data_dir, b"one"), exported(data_dir, b"one")
     other = exported(data_dir, b"two")

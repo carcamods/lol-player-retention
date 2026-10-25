@@ -4,9 +4,9 @@ A static site: Overview, Explorer, Model card, Developers. Every number and char
 `data/snapshot.json`, the file `lolret export` writes (ADR 0014). It makes no API calls
 (ADR 0002).
 
-**Status:** built and checked locally (2026-10-25), not deployed. The snapshot isn't committed
-yet: the owner first decides how much of the weekly timeline to publish (ADR 0014). Deploying
-is the owner's call: `pages.yml` runs only by hand.
+**Status:** built and checked locally (2026-10-25), not deployed. The snapshot is committed:
+the owner chose to publish the weekly timeline as is (ADR 0014). Deploying is the owner's call:
+`pages.yml` runs only by hand.
 
 ## Files
 
@@ -24,24 +24,26 @@ is the owner's call: `pages.yml` runs only by hand.
   no PUUIDs, Riot IDs or raw data, ever.
 - The banner and the disclaimer stay on every page (Riot's policy, FR5).
 - Numbers come from the snapshot, not typed into prose, except the forward-test facts on the
-  Overview, which change only when it is scored.
+  Overview, which change only when it is scored. Never name a player number in prose: every
+  export renumbers them.
 - The site must work at phone width with no horizontal scroll.
 
 ## Building
 
 ```bash
-uv run lolret export -c configs/train.yaml
-cp data/snapshot/v1/snapshot.json site/data/snapshot.json   # local copy, git-ignored
 quarto preview site                                         # or: quarto render site
+# To refresh the committed snapshot (after retraining or scoring the forward test):
+uv run lolret export -c configs/train.yaml
+cp data/snapshot/v1/snapshot.json site/data/snapshot.json   # then commit it
 ```
 
 CI builds the site on every PR that touches it, on a demo snapshot of random values
 (`python -m lolret.export.demo`, `.github/workflows/site.yml`); a test keeps the demo's structure
 equal to a real export's.
 
-**Deploying** is `.github/workflows/pages.yml`, run by hand from the Actions tab, once the
-snapshot is committed (delete its line in `.gitignore`) and Pages' source is set to GitHub
-Actions. It refuses to run without a committed snapshot.
+**Deploying** is `.github/workflows/pages.yml`, run by hand from the Actions tab, once Pages'
+source is set to GitHub Actions (Pages on a private repo needs a paid plan). It refuses to run
+without a committed snapshot.
 
 Quarto isn't a Python dependency: install it from quarto.org. On Windows, don't serve
 `site/_site` from inside that folder while rendering: the lock makes the render fail.
