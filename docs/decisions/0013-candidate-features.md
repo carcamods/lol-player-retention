@@ -62,6 +62,13 @@ out on purpose: the candidate set had already been fixed and read once on the 4a
 changing it afterwards would blur what the forward test judges. It is a candidate for a later
 round.
 
+## Forward entry (2026-10-25)
+
+Retrained on all 11,678 labelled `v1` examples (158 LightGBM rounds) and frozen at 07:19 UTC for
+the same 3,718 players. Entry `candidates` SHA-256
+`c7330485790d48adc57b37b0334195f1fb7e8e48c7c45affff060138ab84668d`, committed in
+`configs/forward.yaml` before any label was collected.
+
 ## Consequences
 
 - New `candidates` table and file, `lolret train-candidates`, and
