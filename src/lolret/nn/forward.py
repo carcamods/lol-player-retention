@@ -25,6 +25,7 @@ from lolret.forward.predict import (
     build_forward_examples,
     entry_path,
     forward_dir,
+    pending_path,
     read_entry,
     verified_entries,
     write_entry,
@@ -101,8 +102,9 @@ def freeze_nn_entry(fwd: Forward, cfg: NNConfig, data_dir: Path, *, now: datetim
         json.dumps({"config": cfg.model_dump(mode="json"), "models": saved}, indent=2) + "\n",
         encoding="utf-8",
     )
-    write_entry(entry, forward.player, preds)
-    digest = sha256(entry)
+    pending = pending_path(entry)
+    write_entry(pending, forward.player, preds)
+    digest = sha256(pending)
     manifest_path = out_dir / MANIFEST_FILE
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["entries"][NETS] = {
@@ -112,4 +114,5 @@ def freeze_nn_entry(fwd: Forward, cfg: NNConfig, data_dir: Path, *, now: datetim
         "nets": {kind: {"epochs": n.epochs} for kind, n in nets.items()},
     }
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    pending.replace(entry)  # last: a run that fails before this line can simply run again
     return NetsEntry(entry=entry, sha256=digest, players=len(forward))
