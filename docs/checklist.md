@@ -101,7 +101,8 @@ of waiting, and launch doesn't wait for it.
 - [ ] Try `lolret predict` on your own Riot ID once the collection isn't running. *Matias*
 - [x] README tells the story in 30 seconds: the 2024 leak, the fix, the result, the proof.
 - [ ] Add the site link to the README once it is live. *Matias*
-- [ ] Full-history gitleaks scan returns zero findings.
+- [x] Full-history gitleaks scan returns zero findings (2026-10-25: every branch, 26 commits;
+      CI repeats it on each PR). Repeat just before going public.
 - [ ] Make the repo public and turn on branch protection (PR and green CI to merge). *Matias*
 - [ ] Archive or make private `streamlit_app`, which still serves the 2024 model. *Matias*
 - [ ] Link the repo and site from the CV and LinkedIn. *Matias*
