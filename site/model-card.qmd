@@ -6,6 +6,16 @@ subtitle: "What the models do, how they were tested, and how well they work"
 ```{ojs}
 //| echo: false
 snapshot = FileAttachment("data/snapshot.json").json()
+dark = Generators.observe((notify) => {
+  const isDark = () => document.body.classList.contains("quarto-dark")
+  notify(isDark())
+  const watch = new MutationObserver(() => notify(isDark()))
+  watch.observe(document.body, {attributes: true, attributeFilter: ["class"]})
+  return () => watch.disconnect()
+})
+pal = dark
+  ? ({ink: "#ecebe7", ink2: "#b8b6b0", base: "#5d5c58", blue: "#5d9df0", blueLight: "#2f5c94", surface: "#17181a"})
+  : ({ink: "#0b0b0b", ink2: "#52514e", base: "#c3c2b7", blue: "#2a78d6", blueLight: "#9ec5f4", surface: "#fcfcfb"})
 labels = ({majority: "Majority class", recency: "Recency rule", logreg: "Logistic regression",
   lightgbm: "LightGBM", mlp: "MLP", gru: "GRU over the last 20 matches",
   lightgbm_gru: "LightGBM + GRU average"})
@@ -114,11 +124,11 @@ Plot.plot({
   x: {label: "Predicted chance of stopping", labelAnchor: "center", labelOffset: 38,
     domain: [0, 1], tickFormat: "%", grid: true},
   y: {label: "Share who stopped", domain: [0, 1], tickFormat: "%", grid: true},
-  style: {background: "transparent", color: "#52514e", fontSize: "13px"},
+  style: {background: "transparent", color: pal.ink2, fontSize: "13px"},
   marks: [
-    Plot.line([[0, 0], [1, 1]], {stroke: "#c3c2b7", strokeDasharray: "4,3"}),
-    Plot.line(bins, {x: "predicted", y: "observed", stroke: "#2a78d6", strokeWidth: 2}),
-    Plot.dot(bins, {x: "predicted", y: "observed", r: 5, fill: "#2a78d6", stroke: "#fcfcfb", strokeWidth: 2}),
+    Plot.line([[0, 0], [1, 1]], {stroke: pal.base, strokeDasharray: "4,3"}),
+    Plot.line(bins, {x: "predicted", y: "observed", stroke: pal.blue, strokeWidth: 2}),
+    Plot.dot(bins, {x: "predicted", y: "observed", r: 5, fill: pal.blue, stroke: pal.surface, strokeWidth: 2}),
     Plot.tip(bins, Plot.pointer({x: "predicted", y: "observed",
       title: (d) => `Predicted ${(100 * d.predicted).toFixed(0)}%, observed ${(100 * d.observed).toFixed(0)}% (${d.n} players)`}))
   ]

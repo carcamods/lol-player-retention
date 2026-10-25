@@ -1,0 +1,26 @@
+/*-- scss:defaults --*/
+// Dark steps of the same palette, chosen for a dark surface, not an automatic flip.
+$body-bg: #17181a;
+$body-color: #ecebe7;
+$primary: #5d9df0;
+$link-color: #7fb2f4;
+$font-size-root: 17px;
+
+/*-- scss:rules --*/
+:root {
+  --ink: #ecebe7;
+  --ink-2: #b8b6b0;
+  --muted: #8f8d87;
+  --grid: #34353a;
+  --baseline: #5d5c58;
+  --blue: #5d9df0;
+  --blue-light: #2f5c94;
+  --surface: #17181a;
+  --card: #1f2023;
+  --banner-bg: #1b2533;
+  --banner-border: #2c4466;
+  --stopped-bg: #4a2219;
+  --stopped-ink: #f4b8a9;
+  --stayed-bg: #1c3a25;
+  --stayed-ink: #a9dcb5;
+}

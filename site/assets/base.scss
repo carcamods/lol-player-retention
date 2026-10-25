@@ -1,27 +1,8 @@
-/*-- scss:defaults --*/
-// Same palette as the EDA charts: warm off-white surface, near-black ink, one blue.
-$body-bg: #fcfcfb;
-$body-color: #0b0b0b;
-$primary: #2a78d6;
-$link-color: #256abf;
-$font-size-root: 17px;
-
 /*-- scss:rules --*/
-:root {
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --muted: #898781;
-  --grid: #e1e0d9;
-  --baseline: #c3c2b7;
-  --blue: #2a78d6;
-  --blue-light: #9ec5f4;
-  --surface: #fcfcfb;
-  --card: #ffffff;
-}
-
+// Shared by both themes; colours come from the variables in light.scss and dark.scss.
 .snapshot-banner {
-  background: #eef4fc;
-  border-bottom: 1px solid #cde2fb;
+  background: var(--banner-bg);
+  border-bottom: 1px solid var(--banner-border);
   color: var(--ink-2);
   font-size: 0.9rem;
   padding: 0.5rem 1rem;
@@ -68,13 +49,13 @@ $font-size-root: 17px;
   padding: 0.1rem 0.6rem;
 
   &.stopped {
-    background: #fde8e4;
-    color: #8c2a16;
+    background: var(--stopped-bg);
+    color: var(--stopped-ink);
   }
 
   &.stayed {
-    background: #e3f1e6;
-    color: #1d5b2c;
+    background: var(--stayed-bg);
+    color: var(--stayed-ink);
   }
 }
 

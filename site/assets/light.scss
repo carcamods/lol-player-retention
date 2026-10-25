@@ -1,0 +1,26 @@
+/*-- scss:defaults --*/
+// Same palette as the EDA charts: warm off-white surface, near-black ink, one blue.
+$body-bg: #fcfcfb;
+$body-color: #0b0b0b;
+$primary: #2a78d6;
+$link-color: #256abf;
+$font-size-root: 17px;
+
+/*-- scss:rules --*/
+:root {
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --blue: #2a78d6;
+  --blue-light: #9ec5f4;
+  --surface: #fcfcfb;
+  --card: #ffffff;
+  --banner-bg: #eef4fc;
+  --banner-border: #cde2fb;
+  --stopped-bg: #fde8e4;
+  --stopped-ink: #8c2a16;
+  --stayed-bg: #e3f1e6;
+  --stayed-ink: #1d5b2c;
+}
