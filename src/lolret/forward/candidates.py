@@ -22,6 +22,7 @@ from lolret.forward.predict import (
     build_forward_examples,
     entry_path,
     forward_dir,
+    pending_path,
     verified_entries,
     write_entry,
 )
@@ -80,8 +81,9 @@ def freeze_candidates_entry(fwd: Forward, data_dir: Path, *, now: datetime) -> C
     model = CandidateGBM.fit(train_x, train.y, train.player, fwd.train)
     preds = {MODEL: model.predict(with_candidates(forward, work / "candidates.parquet"))}
     model.gbm.booster.save_model(work / "lightgbm_candidates.txt")
-    write_entry(entry, forward.player, preds)
-    digest = sha256(entry)
+    pending = pending_path(entry)
+    write_entry(pending, forward.player, preds)
+    digest = sha256(pending)
 
     manifest_path = out_dir / MANIFEST_FILE
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -93,4 +95,5 @@ def freeze_candidates_entry(fwd: Forward, data_dir: Path, *, now: datetime) -> C
         "platt": [model.platt.a, model.platt.b],
     }
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    pending.replace(entry)  # last: a run that fails before this line can simply run again
     return CandidatesEntry(entry=entry, sha256=digest, players=len(forward), rounds=model.rounds)
