@@ -7,9 +7,11 @@ collection runs or storage.
 
 ## Files
 
-- `routing.py`: platform (`na1`) → regional cluster (`americas`) map and base URLs.
+- `routing.py`: platform (`na1`) → regional cluster (`americas`) map, the account-v1 cluster
+  (`account_region_for`: SEA accounts live under `asia`), and base URLs.
 - `ratelimit.py`: `RateLimiter`, a sliding log per window; `parse_limits("20:1,100:120")`.
-- `client.py`: `RiotEndpoints` (the three endpoints, on top of an abstract `get`) and
+- `client.py`: `RiotEndpoints` (league entries, match IDs, match, and account by Riot ID for
+  `lolret predict`, on top of an abstract `get`) and
   `RiotClient` (the network implementation). Errors: `RiotAuthError`, `RiotRequestError`.
 
 ## Rules that must not break

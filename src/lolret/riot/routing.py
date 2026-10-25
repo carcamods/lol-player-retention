@@ -31,5 +31,11 @@ def region_for(platform: str) -> str:
         raise ValueError(f"Unknown platform {platform!r}") from None
 
 
+def account_region_for(platform: str) -> str:
+    """account-v1 is served by americas, asia and europe only; SEA accounts are under asia."""
+    region = region_for(platform)
+    return "asia" if region == "sea" else region
+
+
 def base_url(routing: str) -> str:
     return f"https://{routing}.api.riotgames.com"

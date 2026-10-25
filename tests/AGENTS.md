@@ -33,3 +33,4 @@ one (see `src/lolret/dataset/AGENTS.md`).
 | Models | `test_model.py`, `test_candidates.py` |
 | Neural nets | `test_nn.py` (CPU smoke test included) |
 | Forward test | `test_forward.py` |
+| Live prediction | `test_live.py` |
