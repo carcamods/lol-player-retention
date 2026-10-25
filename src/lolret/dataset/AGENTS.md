@@ -13,9 +13,11 @@ explored in `notebooks/eda.ipynb`.
   `until` skips buckets that end later (the forward test, before its labels exist).
 - `features.sql`: every feature and the label, in one DuckDB query. **The definitions live
   here**, documented column by column in `docs/features.md`.
+- `sequences.sql`: the 20 most recent finished games per (player, cutoff), one row each, for
+  the neural nets (ADR 0012). Same timing rule as the match features.
 - `build.py`: `build_examples` (tables → `examples` in a DuckDB connection) and
   `build_dataset` → `data/processed/<run>/dataset.duckdb` + `examples.parquet`, rebuilt from
-  scratch every time.
+  scratch every time, plus `sequences.parquet`.
 
 ## Rules that must not break (ADR 0003, ADR 0006)
 
@@ -43,5 +45,6 @@ running at T). Imputation belongs to modelling, not here.
 
 ## Tests
 
-`tests/test_dataset.py`: the scenario test, the leak-guard property test (random data,
-5 seeds, 3 cutoffs), extraction from a store, and the build outputs.
+`tests/test_dataset.py`: the scenario tests (features and sequences), the leak-guard property
+tests for features and for sequences (random data, 5 seeds, 3 cutoffs), extraction from a
+store, and the build outputs.

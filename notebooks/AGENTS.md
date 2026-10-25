@@ -3,14 +3,17 @@
 Exploration and narrative only. Pipeline logic lives in `src/lolret/` (`docs/standards.md`): if
 a cell is needed twice, it moves into the package with a test.
 
-**Status:** `eda.ipynb` done on run `v1` (2026-10-24). `train_colab.ipynb` comes with Phase 4b
-(ADR 0004).
+**Status:** `eda.ipynb` done on run `v1` (2026-10-24). `train_colab.ipynb`, the optional Colab
+launcher for the neural nets, added with Phase 4b (ADR 0004, ADR 0012).
 
 ## Files
 
 - `eda.ipynb`: population, churn by cutoff, region and tier, feature distributions and missing
   values, each feature against churn, and the signal left beyond recency. The findings are
   written out in the last cell.
+- `train_colab.ipynb`: a thin launcher. It mounts Google Drive for the processed data,
+  clones the repo with a token from Colab Secrets, and runs `lolret train` and
+  `lolret train-nn`. Never put a token or data in a cell.
 
 ## Rules that must not break
 

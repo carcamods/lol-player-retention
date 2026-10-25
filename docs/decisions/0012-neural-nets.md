@@ -38,6 +38,25 @@ their out-of-fold predictions fit Platt scaling; the final nets train on the who
 set for the mean stopping epoch. Settings were chosen by out-of-fold log loss inside training
 (table below), never by the test set.
 
+**Settings** (`configs/train_nn.yaml`), chosen by out-of-fold log loss over the 4a folds, 2
+seeds per setting, with the test set never loaded:
+
+| Net | Setting | OOF log loss | OOF PR-AUC |
+|---|---|---|---|
+| LightGBM (reference) | as in 4a | 0.3617 | 0.484 |
+| MLP | 64-32, dropout 0.2, weight decay 1e-4 | 0.3650 | 0.470 |
+| MLP | 32 | 0.3635 | 0.477 |
+| MLP | **128-64, dropout 0.4** (weight decay 1e-4 or 1e-3) | **0.3629** | 0.474 |
+| GRU | 32, dropout 0.2, weight decay 1e-4 | 0.3599 | 0.488 |
+| GRU | **32, dropout 0.4, weight decay 1e-3** | **0.3599** | 0.489 |
+| GRU | 16 | 0.3601 | 0.490 |
+| GRU | 64, dropout 0.4 | 0.3599 | 0.485 |
+| GRU | learning rate 3e-4 (with or without more regularisation) | 0.3602-0.3603 | 0.485 |
+
+The GRU settings tie within noise; the more regularised one was kept, and both nets share
+dropout 0.4 and weight decay 1e-3. Learning rate 1e-3, batch 256, up to 200 epochs with
+patience 15.
+
 **Dependencies.** torch installs by default (`default-groups`), from PyTorch's CPU wheel
 index, which is a fraction of the CUDA build's size. This amends ADR 0004's optional group.
 Colab stays possible through `notebooks/train_colab.ipynb`.

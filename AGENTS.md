@@ -39,12 +39,12 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/forward/`, `notebooks/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/nn/`, `src/lolret/forward/`, `notebooks/`, `tests/`, `docs/` |
 
 ## Commands
 
 ```bash
-uv sync                                   # install
+uv sync                                   # install (includes CPU PyTorch)
 uv sync --group notebooks                 # plus pandas, matplotlib, Jupyter kernel
 uv run pytest                             # tests: no network, no key
 uv run mypy src tests                     # types (strict)
@@ -52,6 +52,7 @@ uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
 uv run lolret status -c configs/collect.yaml
 uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
+uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train
 uv run lolret forward collect|predict|score -c configs/forward.yaml   # forward test, ADR 0011
 ```
 
