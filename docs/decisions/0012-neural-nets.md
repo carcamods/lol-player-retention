@@ -93,6 +93,14 @@ result isn't explained by a time shift the folds hide. The likeliest reading is 
 and LightGBM are about equal and a 200-churner test set can't order them. The forward test,
 with about three times as many churners, judges them next (rule 4).
 
+## Forward entry (2026-10-25)
+
+Retrained on all 11,678 labelled `v1` examples with the same settings (MLP 15 epochs, GRU 12;
+out-of-fold log loss 0.3579 and 0.3566) and frozen at 07:17 UTC for the same 3,718 players.
+Entry `nn` (MLP, GRU, LightGBM + GRU average) SHA-256
+`bb8b342304410c8457de3a6d45a0b2d64529b33b5dcd6cad16d651fe4c6b0e27`, committed in
+`configs/forward.yaml` before any label was collected.
+
 ## Consequences
 
 - New module `src/lolret/nn/`, command `lolret train-nn` (after `lolret train`), and a
