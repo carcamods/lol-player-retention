@@ -1,0 +1,120 @@
+---
+title: "Explorer"
+subtitle: "Every held-out player: the prediction, and what actually happened"
+---
+
+Players are numbered at random; nothing here identifies an account. Pick one to see the
+model's churn probability, the three things that moved it most, and their weekly games
+around the cutoff.
+
+```{ojs}
+//| echo: false
+snapshot = FileAttachment("data/snapshot.json").json()
+players = snapshot.players
+tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"]
+title = (s) => s.charAt(0) + s.slice(1).toLowerCase()
+viewof region = Inputs.select(["All regions", ...new Set(players.map((p) => p.region))], {label: "Region"})
+viewof tier = Inputs.select(["All tiers", ...tiers], {label: "Tier", format: (t) => t.startsWith("All") ? t : title(t)})
+viewof outcome = Inputs.select(["Any outcome", "Stopped playing", "Kept playing"], {label: "Outcome"})
+filtered = players.filter((p) =>
+  (region === "All regions" || p.region === region) &&
+  (tier === "All tiers" || p.tier === tier) &&
+  (outcome === "Any outcome" || p.churned === (outcome === "Stopped playing")))
+viewof searched = Inputs.search(filtered, {placeholder: "Search, e.g. 0042 or Gold", label: "Search"})
+viewof player = Inputs.select(searched, {
+  label: "Player",
+  format: (p) => `${p.id} · ${title(p.tier)} ${p.division} · ${p.region}`
+})
+```
+
+```{ojs}
+//| echo: false
+pct = (x) => `${(100 * x).toFixed(0)}%`
+features = ({
+  games_0_7d: "Games in the last 7 days", games_8_14d: "Games 8–14 days before",
+  games_15_28d: "Games 15–28 days before", games_29_56d: "Games 29–56 days before",
+  active_weeks_8w: "Active weeks of the last 8", recent_games: "Recent games in view",
+  days_since_last_game: "Days since the last game", win_rate: "Win rate, last 20 games",
+  win_rate_last5: "Win rate, last 5 games", loss_streak: "Losing streak", kda: "KDA",
+  deaths_avg: "Deaths per game", duration_min_avg: "Game length (minutes)",
+  remake_share: "Share of remakes", surrendered_loss_share: "Share of surrendered losses",
+  ranked_share: "Share of ranked games", aram_share: "Share of ARAM games",
+  champion_diversity: "Champion variety", gap_hours_median: "Median hours between games",
+  last_session_games: "Games in the last session", main_role_share: "Share in main role"
+})
+fmt = (v) => v === null ? "unknown" : Number.isInteger(v) ? v : v.toFixed(2)
+player === null ? html`<p class="small-note">No player matches these filters.</p>` : html`
+<div class="stat-row">
+  <div class="stat"><div class="value">${pct(player.churn)}</div>
+    <div class="label">chance of stopping, LightGBM</div></div>
+  <div class="stat"><div class="value">${pct(player.recency)}</div>
+    <div class="label">the recency rule alone</div></div>
+  <div class="stat"><div class="value"><span class="outcome ${player.churned ? "stopped" : "stayed"}">
+    ${player.churned ? "Stopped playing" : "Kept playing"}</span></div>
+    <div class="label">what actually happened</div></div>
+  <div class="stat"><div class="value">${player.games_28d}</div>
+    <div class="label">games in the 28 days before</div></div>
+</div>`
+```
+
+### What moved the prediction
+
+```{ojs}
+//| echo: false
+maxEffect = Math.max(...players.flatMap((p) => p.drivers.map((d) => Math.abs(d.effect))))
+player === null ? html`` : html`<table class="drivers">
+  ${player.drivers.map((d) => html`<tr>
+    <td>${features[d.feature] ?? d.feature}</td>
+    <td>${fmt(d.value)}</td>
+    <td>${d.effect > 0 ? "raises" : "lowers"} the chance</td>
+    <td style="width: 35%"><span class="bar" style="width: ${(100 * Math.abs(d.effect) / maxEffect).toFixed(0)}%;
+      opacity: ${d.effect > 0 ? 1 : 0.45}"></span></td>
+  </tr>`)}
+</table>
+<p class="small-note">SHAP values: how much each feature pushed this player's prediction up or
+down from the average, in log-odds.</p>`
+```
+
+### Weekly games around the cutoff
+
+```{ojs}
+//| echo: false
+weeks = player === null ? [] : player.weeks.map((games, i) => ({
+  week: i - snapshot.meta.weeks.before, games,
+  when: i < snapshot.meta.weeks.before ? "before the cutoff" : "after (the outcome)"
+}))
+Plot.plot({
+  height: 240,
+  marginLeft: 44,
+  marginBottom: 44,
+  x: {label: "Weeks from the cutoff", labelAnchor: "center", labelOffset: 38,
+    domain: [-snapshot.meta.weeks.before, snapshot.meta.weeks.after], ticks: 12},
+  y: {label: "Games", grid: true, nice: true},
+  style: {background: "transparent", color: "#52514e", fontSize: "13px"},
+  marks: [
+    Plot.rectY(weeks, {x1: "week", x2: (d) => d.week + 1, y: "games", insetLeft: 2, insetRight: 2,
+      fill: (d) => d.week < 0 ? "#2a78d6" : "#9ec5f4", rx: 3}),
+    Plot.ruleY([0], {stroke: "#c3c2b7"}),
+    Plot.ruleX([0], {stroke: "#0b0b0b", strokeDasharray: "4,3"}),
+    Plot.text([{x: 0}], {x: "x", frameAnchor: "top", dx: 6, text: () => "cutoff", textAnchor: "start", fill: "#52514e"}),
+    Plot.tip(weeks, Plot.pointerX({x: (d) => d.week + 0.5, y: "games",
+      title: (d) => `Week ${d.week >= 0 ? "+" : ""}${d.week} (${d.when}): ${d.games} games`}))
+  ]
+})
+```
+
+<p class="small-note">Dark bars are what the model saw; light bars are the 4 weeks it was
+predicting. A player "stopped" if all four light bars are empty.</p>
+
+### All matching players
+
+```{ojs}
+//| echo: false
+Inputs.table(searched, {
+  columns: ["id", "region", "tier", "division", "churn", "churned", "games_28d"],
+  header: {id: "Player", region: "Region", tier: "Tier", division: "Div.", churn: "Chance of stopping",
+    churned: "Stopped?", games_28d: "Games, 28 days"},
+  format: {churn: pct, churned: (c) => c ? "yes" : "no", tier: title},
+  sort: "churn", reverse: true, rows: 12
+})
+```

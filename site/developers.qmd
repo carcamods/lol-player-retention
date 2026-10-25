@@ -1,0 +1,55 @@
+---
+title: "Developers"
+subtitle: "Run the pipeline, or predict for a player with your own key"
+---
+
+The code is a Python package, `lolret`, with one command per pipeline stage. The site is a
+static snapshot; live predictions run only from the command line, with your own Riot API key,
+because Riot's policy doesn't allow a public product on a personal key.
+
+## Predict for one player
+
+```bash
+git clone https://github.com/carcamods/lol-player-retention.git
+cd lol-player-retention
+uv sync
+cp .env.example .env            # add your RIOT_API_KEY
+uv run lolret predict --riot-id "Name#TAG" --platform euw1
+```
+
+The prediction needs trained models (`lolret train`, below). It fetches the player's last eight
+weeks (about 30 requests), builds the features with exactly the code used in training, as of
+today 00:00 UTC, and prints the chance of no game in the next 28 days with its three biggest
+drivers. Players who haven't played in the last four weeks aren't covered.
+
+## The pipeline
+
+| Stage | Command | Output |
+|---|---|---|
+| Collect | `lolret collect -c configs/collect.yaml` | `data/raw/<run>.sqlite`, every API response cached; resumable |
+| Build | `lolret build -c configs/collect.yaml` | point-in-time features and labels, match sequences |
+| Train | `lolret train -c configs/train.yaml` | classical models, metrics, model card |
+| Neural nets | `lolret train-nn -c configs/train_nn.yaml` | MLP and GRU, added to the model card |
+| Forward test | `lolret forward collect / predict / score` | predictions frozen by hash, scored 28 days later |
+| Export | `lolret export -c configs/train.yaml` | the anonymised snapshot this site reads |
+
+A full collection run (about 6,000 players) takes around 35 hours at a personal key's rate
+limit. Nothing needs the network except `collect`, `forward collect` and `predict`.
+
+## How it is kept honest
+
+- **Point in time.** Each example is a (player, cutoff) pair. Features read only data from
+  before the cutoff; the label is whether the player plays in the 28 days after it. A
+  property test deletes everything after each cutoff and checks that no feature changes.
+- **Held-out players, later date.** The test set is players the models never saw, at a cutoff
+  after every training label was known.
+- **Rules before results.** New features and models are kept only if they pass a rule written
+  down before training; failures are recorded as decisions too.
+- **A forward test** on outcomes that hadn't happened when the predictions were frozen.
+
+## How it is built
+
+Python 3.12+, uv, httpx, pydantic, SQLite, DuckDB, scikit-learn, LightGBM, PyTorch and Quarto,
+with ruff, strict mypy, pytest and gitleaks in CI. The repository keeps a short `AGENTS.md`
+map, one context file per module, and an architecture decision record for every choice that
+matters: see the [decisions](https://github.com/carcamods/lol-player-retention/tree/main/docs/decisions).

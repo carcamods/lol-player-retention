@@ -59,6 +59,9 @@ def test_the_snapshot_has_every_held_out_player_and_no_identifier(data_dir: Path
         assert len(p["weeks"]) == 12
         assert p["region"] in {"NA", "EUW", "KR"}
     assert {"recency", "lightgbm"} <= set(snap["metrics"])
+    assert len(snap["metrics"]["lightgbm"]["pr_auc_ci"]) == 2
+    assert "lightgbm" in snap["vs_recency"]
+    assert snap["train"]["examples"] > 0
 
 
 def test_numbers_depend_on_the_salt_only(data_dir: Path) -> None:

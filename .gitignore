@@ -36,6 +36,8 @@ htmlcov/
 # Quarto build output
 site/_site/
 site/.quarto/
+# The snapshot stays local until the owner settles what the site shows (ADR 0014).
+site/data/snapshot.json
 
 # Editors and OS
 .vscode/

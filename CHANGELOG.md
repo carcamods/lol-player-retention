@@ -2,6 +2,21 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] The site
+
+### Added
+- `site/`: a Quarto site with Overview, Explorer (filters, search, each player's probability,
+  outcome, top drivers and weekly games around the cutoff), Model card (intervals, comparisons
+  with the recency rule, a calibration chart) and Developers. Every number comes from the
+  snapshot; the banner and Riot's disclaimer are on every page; no horizontal scroll at phone
+  width. Built and checked locally, not deployed.
+- The snapshot now carries each model's intervals, the comparisons with the recency rule and the
+  training-set sizes, for the model card page.
+
+### Changed
+- `site/data/snapshot.json` is git-ignored until the owner settles what the timeline shows
+  (ADR 0014).
+
 ## [2026-10-25] Snapshot export for the site
 
 ### Added

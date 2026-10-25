@@ -1,0 +1,75 @@
+---
+title: "Will a ranked player stop playing?"
+subtitle: "Predicting 28-day churn in League of Legends, honestly"
+---
+
+This project predicts whether a ranked League of Legends player will play **no game at all in
+the next 28 days**, using only what was knowable at the moment of the prediction. It covers
+6,048 players on NA, EUW and KR, from Iron to Diamond, sampled from the ranked ladder through
+Riot's API.
+
+```{ojs}
+//| echo: false
+snapshot = FileAttachment("data/snapshot.json").json()
+m = snapshot.metrics
+pct = (x) => `${(100 * x).toFixed(0)}%`
+html`<div class="stat-row">
+  <div class="stat"><div class="value">${snapshot.meta.players.toLocaleString()}</div>
+    <div class="label">held-out players at ${snapshot.meta.cutoff}</div></div>
+  <div class="stat"><div class="value">${pct(snapshot.meta.churn_rate)}</div>
+    <div class="label">of them stopped playing</div></div>
+  <div class="stat"><div class="value">${m.lightgbm.pr_auc.toFixed(3)}</div>
+    <div class="label">PR-AUC of the best model (LightGBM)</div></div>
+  <div class="stat"><div class="value">${m.recency.pr_auc.toFixed(3)}</div>
+    <div class="label">PR-AUC of "days since the last game" alone</div></div>
+</div>`
+```
+
+## The honest answer
+
+The best model barely beats the simplest possible rule: **rank players by how long it has been
+since their last game**. Every model was tested on players it had never seen, at a later date
+than anything it learned from, and the gain over that rule is inside the noise of a test set
+with 200 churners.
+
+```{ojs}
+//| echo: false
+labels = ({majority: "Majority class", recency: "Recency rule (days since the last game)",
+  logreg: "Logistic regression", lightgbm: "LightGBM", mlp: "MLP",
+  gru: "GRU over the last 20 matches", lightgbm_gru: "LightGBM + GRU average"})
+html`<table class="table table-sm">
+  <thead><tr><th>Model</th><th>PR-AUC</th><th>ROC-AUC</th><th>Brier</th></tr></thead>
+  <tbody>${Object.entries(m).map(([k, r]) => html`<tr>
+    <td>${labels[k] ?? k}</td><td>${r.pr_auc.toFixed(3)}</td>
+    <td>${r.roc_auc.toFixed(3)}</td><td>${r.brier.toFixed(3)}</td></tr>`)}</tbody>
+</table>`
+```
+
+<p class="small-note">PR-AUC rewards finding the players who stop; a random guess scores the
+churn rate. Lower Brier is better. Intervals and comparisons are on the
+<a href="model-card.qmd">model card</a>.</p>
+
+## Why it's hard
+
+Most players who stop had already been away for a while: 69% of them hadn't played for a week
+or more at the cutoff. Among players on a break, nothing in their history tells a break from
+quitting much better than the length of the break itself. Win rate, KDA and other in-game
+statistics carry almost no signal. That is a finding, not a failure: it says where the signal
+isn't.
+
+## The first version, and its leak
+
+The 2024 version of this project reported 91% accuracy. Its features leaked the label: matches
+were bucketed by date across all players, so a player who had quit was the one with an empty
+"late" bucket, and the model learned the answer. This version builds every feature from data
+before the prediction date only, and a test deletes everything after that date and checks that
+no feature changes.
+
+## What's next: a forward test
+
+On 2026-10-25, the models predicted for 3,718 players whether they would play between
+2026-10-22 and 2026-11-19. The predictions were frozen and their fingerprint (SHA-256) was
+committed to the repository before any of those weeks was collected, so they can't be adjusted
+after the fact. They are scored after 2026-11-19, on outcomes nobody had seen.
+
+[Explore the predictions →](explorer.qmd){.btn .btn-primary}

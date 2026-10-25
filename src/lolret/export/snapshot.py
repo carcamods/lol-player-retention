@@ -138,10 +138,19 @@ def export_snapshot(
             "note": "Frozen snapshot of held-out players, not a live product.",
         },
         "metrics": {
-            name: {k: metrics["test"][name][k] for k in ("pr_auc", "roc_auc", "brier")}
+            name: {
+                k: metrics["test"][name][k]
+                for k in ("pr_auc", "pr_auc_ci", "roc_auc", "roc_auc_ci", "brier", "brier_ci")
+            }
             for name in SHOWN
             if name in metrics["test"]
         },
+        "vs_recency": {
+            name: metrics["vs_baseline"][name]
+            for name in SHOWN
+            if name in metrics.get("vs_baseline", {}) and name != "majority"
+        },
+        "train": {k: metrics["data"]["train"][k] for k in ("examples", "players", "churn_rate")},
         "players": players,
     }
     path = snapshot_path(data_dir, cfg.dataset)
