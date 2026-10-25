@@ -338,3 +338,26 @@ def test_cli_forward_predict_reports_a_missing_collection(
     result = CliRunner().invoke(app, ["forward", "predict", "-c", str(path)])
 
     assert result.exit_code == 1
+
+
+def test_a_freeze_that_fails_midway_can_run_again(
+    world: tuple[Forward, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fwd, data_dir = world
+    run_features(fwd, data_dir, datetime(2026, 10, 25, tzinfo=UTC))
+
+    failures = [OSError("disk full")]
+
+    def fails_once() -> str:
+        if failures:
+            raise failures.pop()
+        return "abc1234"
+
+    monkeypatch.setattr("lolret.forward.predict._git_commit", fails_once)
+    with pytest.raises(OSError, match="disk full"):
+        freeze_predictions(fwd, data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
+    assert not entry_path(data_dir, fwd, "ladder").exists()  # nothing counts as frozen yet
+
+    summary = freeze_predictions(fwd, data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
+
+    assert summary.sha256 == file_hash(summary.entry)

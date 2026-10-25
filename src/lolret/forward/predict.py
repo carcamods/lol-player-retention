@@ -53,6 +53,11 @@ def entry_path(data_dir: Path, fwd: Forward, entry: str) -> Path:
     return forward_dir(data_dir, fwd) / "entries" / f"{entry}.csv"
 
 
+def pending_path(entry: Path) -> Path:
+    """Where an entry is written first; it takes its final name once everything else is saved."""
+    return entry.with_name(entry.name + ".pending")
+
+
 def build_forward_examples(
     store: Store, fwd: Forward, path: Path, *, until: datetime | None
 ) -> Examples:
@@ -170,8 +175,9 @@ def freeze_predictions(fwd: Forward, data_dir: Path, *, now: datetime) -> Freeze
     ladder, selection = fit_ladder(train, fwd.train)
     preds = ladder.predict(forward.x)
     ladder.save(out_dir)
-    write_entry(entry, forward.player, preds)
-    digest = sha256(entry)
+    pending = pending_path(entry)
+    write_entry(pending, forward.player, preds)
+    digest = sha256(pending)
 
     manifest: dict[str, Any] = {
         "name": fwd.name,
@@ -191,6 +197,7 @@ def freeze_predictions(fwd: Forward, data_dir: Path, *, now: datetime) -> Freeze
         "entries": {LADDER: {"file": f"entries/{entry.name}", "sha256": digest}},
     }
     (out_dir / MANIFEST_FILE).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    pending.replace(entry)  # last: a run that fails before this line can simply run again
     return FreezeSummary(
         entry=entry,
         sha256=digest,
