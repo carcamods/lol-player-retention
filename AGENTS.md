@@ -11,7 +11,7 @@ changing code in that folder. Read what the task needs, not the whole repo.
 
 ## Active work (updated 2026-10-25)
 
-- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built except publishing. Run `v1`:
+- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built and the snapshot committed, not deployed. Run `v1`:
   6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never delete or rewrite
   `data/`.
 - **Results (4a test, 200 churners):** LightGBM 0.464 PR-AUC against 0.455 for the recency rule,
@@ -25,9 +25,11 @@ changing code in that folder. Read what the task needs, not the whole repo.
   question: does LightGBM beat the recency rule? The forward test also decides whether the
   candidate features join the model (ADR 0013).
 - **Phase 5:** `lolret predict` (checked against the real API), `lolret export` (ADR 0014) and the
-  Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. Publishing
-  waits on the owner's ADR 0014 call about the weekly timeline; `pages.yml` deploys by hand only.
-- **Next (owner):** the ADR 0014 decision, then commit the snapshot and run `pages.yml`; score
+  Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. The owner
+  chose to publish the weekly timeline as is (ADR 0014) and `site/data/snapshot.json` is
+  committed; `pages.yml` deploys by hand only.
+- **Next (owner):** make the repo public, set Pages' source to GitHub Actions and run
+  `pages.yml`; score
   the forward test after 2026-11-19. The checklist lists every owner task.
 
 ## Where things live (read on demand)

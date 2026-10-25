@@ -1,8 +1,8 @@
 name: Deploy site
 
 # Publishes site/ to GitHub Pages. Runs only by hand (Actions tab > Deploy site > Run workflow).
-# Before the first run: commit site/data/snapshot.json (ADR 0014) and set
-# Settings > Pages > Source to "GitHub Actions".
+# Before the first run: set Settings > Pages > Source to "GitHub Actions". It serves the
+# committed site/data/snapshot.json (ADR 0014).
 on:
   workflow_dispatch:
 

@@ -4,8 +4,8 @@
 the latest cutoff, numbered by a throwaway salt, with probabilities, outcomes, drivers and
 weekly activity. Design: ADR 0014 (and ADR 0002 for why the site is a snapshot).
 
-**Status:** done (2026-10-25). Not published: the owner decides first how much of the weekly
-timeline to show (ADR 0014).
+**Status:** done (2026-10-25). Published: the owner chose to show the weekly timeline as is
+(ADR 0014), and `site/data/snapshot.json` is a committed copy of the `v1` export.
 
 ## Files
 
@@ -20,10 +20,13 @@ timeline to show (ADR 0014).
   The salt is drawn per export and never stored or logged.
 - Only held-out test players: never training players, whose predictions would look better than
   the model is.
-- The export writes under `data/`. Publishing (copying into the site) is a deliberate,
-  separate step, after the ADR 0014 question is settled.
+- Days since the last game is rounded to a tenth of a day (`DECIMALS`). Finer, it pins the
+  time of a player's last game, which identifies more than the weekly counts.
+- The export writes under `data/`. Publishing is a deliberate, separate step: copy it into
+  `site/data/`, check the diff, commit.
 
 ## Tests
 
-`tests/test_export.py`: every held-out player and no identifier in the output, numbering that
-depends only on the salt, the timeline against the buckets, and the CLI without models.
+`tests/test_export.py`: every held-out player and no identifier in the output, days since the
+last game rounded, numbering that depends only on the salt, the timeline against the buckets,
+and the CLI without models.

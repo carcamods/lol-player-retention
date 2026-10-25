@@ -2,6 +2,19 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] The snapshot is committed for the site
+
+### Added
+- `site/data/snapshot.json`: the anonymised `v1` snapshot (1,104 held-out players), committed
+  so the site can be deployed. The owner chose to publish the weekly timeline as is (ADR 0014).
+
+### Changed
+- `lolret export` rounds days since the last game to a tenth of a day. At three decimals it
+  pinned a player's last game to about 90 seconds, which identified far more than the weekly
+  counts.
+- The Explorer shows driver values without trailing zeros, so a rounded value doesn't look
+  more precise than it is.
+
 ## [2026-10-25] Forward test frozen; session checkpoint
 
 ### Added

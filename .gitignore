@@ -37,9 +37,6 @@ htmlcov/
 # Quarto build output
 site/_site/
 site/.quarto/
-# The snapshot stays local until the owner settles what the site shows (ADR 0014).
-# To publish it, delete the next line and commit site/data/snapshot.json.
-site/data/snapshot.json
 
 # Editors and OS
 .vscode/

@@ -18,7 +18,7 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | [0011](0011-forward-test.md) | Forward test at the 2026-10-22 cutoff: ladder retrained on all of `v1`, predictions frozen by a committed hash, scored after 2026-11-19 | Accepted |
 | [0012](0012-neural-nets.md) | Neural nets: leak-guarded match sequences, CPU training with the 4a protocol, and the rule for replacing LightGBM | Accepted |
 | [0013](0013-candidate-features.md) | Five candidate features (break history, account level, repeated teammates) kept apart and judged by the forward test | Accepted |
-| [0014](0014-snapshot-export.md) | Snapshot export: held-out players numbered by a throwaway salt, written under `data/` until the owner decides how much timeline to publish | Accepted |
+| [0014](0014-snapshot-export.md) | Snapshot export: held-out players numbered by a throwaway salt; published with the weekly timeline as is | Accepted |
 
 ## Template
 

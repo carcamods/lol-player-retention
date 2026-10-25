@@ -1,6 +1,7 @@
 # 0014: Snapshot export: held-out players, numbered by a throwaway salt
 
-**Status:** Accepted, 2026-10-25. Publishing the file is the owner's decision (see below).
+**Status:** Accepted, 2026-10-25. Published with the weekly timeline as is (owner's decision,
+2026-10-25, below).
 
 ## Context
 
@@ -26,16 +27,25 @@ an activity timeline, plus the model's headline metrics.
 - **Where:** `lolret export` writes `data/snapshot/<dataset>/snapshot.json`, under `data/`, so
   nothing is published by running it. Copying it into the site is a separate step.
 
-## Open question for the owner, before publishing
+## Publishing: the weekly timeline as is (owner, 2026-10-25)
 
-The weekly timeline plus region and tier is the most identifying part: someone determined
-could compare a player's week-by-week game counts with public match-history sites and find
-the account. Options: publish as is (FR5 asks for a timeline), coarsen the counts (for
-example 0, 1-5, 6-15, 16+), or show only the 8 weeks before the cutoff. Nothing is published
-until this is decided.
+The weekly timeline plus region and tier is the most identifying part the site needs: someone
+determined could compare a player's week-by-week game counts with public match-history sites
+and find the account. The options were to publish it as is (FR5 asks for a timeline), coarsen
+the counts (for example 0, 1-5, 6-15, 16+), or show only the 8 weeks before the cutoff.
+
+**Decision:** publish it as is. The games are already public on every match-history site, the
+snapshot names no one, and coarse counts would hide the pattern the Explorer is there to show:
+activity fading before a player stops.
+
+**Coarsened anyway:** days since the last game, rounded to a tenth of a day (about 2.4 hours).
+At three decimals it pinned a player's last game to about 90 seconds, which identifies far
+more than the weekly counts and tells a reader nothing more.
 
 ## Consequences
 
 - New module `src/lolret/export/` and command `lolret export` (after `lolret train`).
 - The snapshot is 0.7 MB of JSON for 1,104 players, small enough for a static site.
 - When the forward test is scored, its players can be exported the same way.
+- `site/data/snapshot.json` is committed. Each export draws a new salt, so player numbers
+  change whenever the snapshot is refreshed, and git keeps every published version.
