@@ -381,3 +381,57 @@ def train_nn(config: NNConfigOption = DEFAULT_NN_CONFIG) -> None:
             c["pr_auc_diff"],
         )
     log.info("Nets in %s; metrics.json and model_card.md updated.", summary.out_dir)
+
+
+@app.command("train-candidates")
+def train_candidates(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
+    """Compare LightGBM with the candidate features against the ladder on the 4a test set.
+
+    For the record only; the forward test decides whether they join the model (ADR 0013).
+    """
+    from lolret.model.candidates import MODEL, RESULTS_FILE, evaluate_candidates
+
+    settings = get_settings()
+    cfg = load_train_config(config)
+    try:
+        summary = evaluate_candidates(cfg, settings.data_dir)
+    except FileNotFoundError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    for name, r in summary["test"].items():
+        log.info("%-20s PR-AUC %.3f  ROC-AUC %.3f", name, r["pr_auc"], r["roc_auc"])
+    c = summary["vs_lightgbm"]
+    lo, hi = c["pr_auc_diff_ci"] or (float("nan"), float("nan"))
+    log.info(
+        "%s - lightgbm: %+.3f PR-AUC (95%% CI %+.3f to %+.3f); details in %s",
+        MODEL,
+        c["pr_auc_diff"],
+        lo,
+        hi,
+        RESULTS_FILE,
+    )
+
+
+@forward_app.command("predict-candidates")
+def forward_predict_candidates(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -> None:
+    """Enter LightGBM with the candidate features in the forward test (ADR 0013).
+
+    After the ladder's hash is committed; runs once, and never once labels exist.
+    """
+    from lolret.forward.candidates import ENTRY, freeze_candidates_entry
+
+    settings = get_settings()
+    fwd = _load_forward(config)
+    try:
+        summary = freeze_candidates_entry(fwd, settings.data_dir, now=datetime.now(UTC))
+    except ForwardError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    log.info(
+        "Froze LightGBM with the candidates (%d rounds) for %d players in %s.",
+        summary.rounds,
+        summary.players,
+        summary.entry,
+    )
+    typer.echo(f"Add this under entries in {config} and commit it before collecting labels:")
+    typer.echo(f"  {ENTRY}: {summary.sha256}")

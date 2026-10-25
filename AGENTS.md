@@ -29,6 +29,9 @@ changing code in that folder. Read what the task needs, not the whole repo.
   average, trained on CPU with the 4a protocol (`lolret train-nn`). All level with LightGBM
   on the test set (GRU 0.437, MLP 0.458), so LightGBM stays the headline model. The nets are
   entered in the forward test as a later entry.
+- **Candidate features (ADR 0013):** the four break features plus `repeated_teammates`, kept in
+  `candidates.parquet` apart from `FEATURES`. Level with LightGBM on the 4a test (0.458), which
+  decides nothing; entered in the forward test, which decides whether they join the model.
 - **Next:** score the forward test after 2026-11-19, then 5 site and launch. See the roadmap.
 
 ## Where things live (read on demand)
@@ -55,6 +58,7 @@ uv run lolret status -c configs/collect.yaml
 uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
 uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train
+uv run lolret train-candidates -c configs/train.yaml                # candidate features, ADR 0013
 uv run lolret forward collect|predict|score -c configs/forward.yaml   # forward test, ADR 0011
 ```
 

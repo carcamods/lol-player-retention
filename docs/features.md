@@ -53,6 +53,20 @@ Missing values are deliberate: a player whose only recent game was still running
 activity counts but no match features. LightGBM handles them natively; logistic regression
 imputes the training median and adds a missing-value indicator (ADR 0008).
 
+## Candidate features (not model inputs yet)
+
+`candidates.parquet` (`src/lolret/dataset/candidates.sql`) has one row per (player, cutoff)
+with five candidates that the forward test judges before they join the model (ADR 0013).
+Same timing rules as above.
+
+| Column | Definition |
+|---|---|
+| `returns_8w` | Times in the 8 weeks before T that games came back after a week without any. |
+| `longest_gap_days` | The longest gap between two consecutive recent games, in days. |
+| `break_vs_longest_gap` | Days since the last game divided by `longest_gap_days` (floored at an hour). |
+| `summoner_level` | Account level at the most recent game, a stand-in for account age. |
+| `repeated_teammates` | Teammates on the player's team in at least two of the 20 recent games (likely premades). |
+
 ## Match sequences (for the neural nets)
 
 `sequences.parquet` has one row per (player, cutoff, game) for the same 20 most recent games

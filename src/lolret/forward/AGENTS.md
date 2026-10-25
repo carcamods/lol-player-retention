@@ -19,6 +19,8 @@ the question set before freezing: ADR 0011. Config: `configs/forward.yaml`.
 - `score.py`: `score_forward` (checks, labels, `evaluate`, `results.json`, `report.md`);
   later entries are also compared with LightGBM.
 - The neural nets' entry lives in `src/lolret/nn/forward.py` (`lolret forward predict-nn`).
+- `candidates.py`: `freeze_candidates_entry`, the candidate features' later entry
+  (`lolret forward predict-candidates`, ADR 0013).
 
 ## Rules that must not break
 

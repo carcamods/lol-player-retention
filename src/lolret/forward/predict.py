@@ -65,9 +65,10 @@ def build_forward_examples(
     *,
     until: datetime | None,
     sequences: Path | None = None,
+    candidates: Path | None = None,
 ) -> Examples:
     """Features (and, with `until=None`, labels) at the forward cutoff, written to `path`;
-    the match sequences too when `sequences` names a file."""
+    the match sequences and the candidate features too when given a file."""
     tables = extract(store, fwd.collect, until=until)
     with duckdb.connect() as con:
         build_examples(con, tables, [fwd.cutoff])
@@ -75,6 +76,8 @@ def build_forward_examples(
         con.table("examples").write_parquet(str(path))
         if sequences is not None:
             con.table("sequences").write_parquet(str(sequences))
+        if candidates is not None:
+            con.table("candidates").write_parquet(str(candidates))
     return load_examples(path, labelled=False)
 
 

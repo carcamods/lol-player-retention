@@ -15,9 +15,11 @@ explored in `notebooks/eda.ipynb`.
   here**, documented column by column in `docs/features.md`.
 - `sequences.sql`: the 20 most recent finished games per (player, cutoff), one row each, for
   the neural nets (ADR 0012). Same timing rule as the match features.
+- `candidates.sql`: five candidate features per (player, cutoff), kept apart from
+  `features.sql` until the forward test decides (ADR 0013).
 - `build.py`: `build_examples` (tables → `examples` in a DuckDB connection) and
   `build_dataset` → `data/processed/<run>/dataset.duckdb` + `examples.parquet`, rebuilt from
-  scratch every time, plus `sequences.parquet`.
+  scratch every time, plus `sequences.parquet` and `candidates.parquet`.
 
 ## Rules that must not break (ADR 0003, ADR 0006)
 
@@ -45,6 +47,6 @@ running at T). Imputation belongs to modelling, not here.
 
 ## Tests
 
-`tests/test_dataset.py`: the scenario tests (features and sequences), the leak-guard property
-tests for features and for sequences (random data, 5 seeds, 3 cutoffs), extraction from a
+`tests/test_dataset.py`: the scenario tests (features, sequences, candidates), the leak-guard
+property tests for each of the three (random data, 5 seeds, 3 cutoffs), extraction from a
 store, and the build outputs.
