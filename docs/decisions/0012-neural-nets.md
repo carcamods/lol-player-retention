@@ -72,6 +72,27 @@ Colab stays possible through `notebooks/train_colab.ipynb`.
 4. The GRU and the average enter the forward test (ADR 0011) as later entries whatever their
    result here, so fresh outcomes judge them too.
 
+## Result (run `v1`, 2026-10-25)
+
+On the 4a test set (1,104 held-out players, 200 churned), 95% bootstrap intervals:
+
+| Model | PR-AUC | ROC-AUC | Brier | PR-AUC against LightGBM |
+|---|---|---|---|---|
+| LightGBM | 0.464 (0.400, 0.541) | 0.825 | 0.118 | |
+| MLP | 0.458 (0.392, 0.532) | 0.821 | 0.118 | -0.007 (-0.036, +0.021) |
+| GRU | 0.437 (0.373, 0.508) | 0.816 | 0.120 | -0.027 (-0.062, +0.006) |
+| LightGBM + GRU average | 0.456 (0.392, 0.533) | 0.824 | 0.118 | -0.008 (-0.026, +0.010) |
+
+**Rule 1: LightGBM stays the headline model.** No net is clearly better; none is clearly
+worse either. None beats the recency rule (0.455) clearly.
+
+Inside training, the GRU looked slightly better than LightGBM: out-of-fold log loss 0.3585
+against 0.3617, and in a diagnostic run trained on the 2026-07-30 examples and checked on the
+2026-08-27 ones (same players, a month later), PR-AUC 0.527 against 0.506. So the test
+result isn't explained by a time shift the folds hide. The likeliest reading is that the nets
+and LightGBM are about equal and a 200-churner test set can't order them. The forward test,
+with about three times as many churners, judges them next (rule 4).
+
 ## Consequences
 
 - New module `src/lolret/nn/`, command `lolret train-nn` (after `lolret train`), and a

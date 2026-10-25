@@ -4,7 +4,8 @@ An MLP on the 21 tabular features and a GRU over each example's last 20 finished
 trained with the Phase 4a protocol and added to the same model card. Design: ADR 0004 and
 ADR 0012. Config: `configs/train_nn.yaml`.
 
-**Status:** done on run `v1` (2026-10-25); results in the README and the model card.
+**Status:** done on run `v1` (2026-10-25): all level with LightGBM on the test set, which
+stays the headline model (ADR 0012). Entered in the forward test (`nn/forward.py`).
 
 ## Files
 
@@ -15,6 +16,8 @@ ADR 0012. Config: `configs/train_nn.yaml`.
 - `models.py`: `MLP` and `GRUNet`, with the same `forward(static, seq, lengths)`.
 - `train.py`: `fit_net` (early stopping or a fixed epoch count), `train_kind` (seeds × folds,
   Platt on the out-of-fold mean, final nets), `train_nn_and_evaluate`, `load_nets`.
+- `forward.py`: `freeze_nn_entry`, the nets' later entry in the forward test (retrained on
+  all of the base run; refuses before the ladder's hash is committed or once labels exist).
 
 ## Rules that must not break
 

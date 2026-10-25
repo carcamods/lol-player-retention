@@ -24,8 +24,8 @@ explains the leak and how this version prevents it.
 
 ## First results
 
-Classical models on 1,104 held-out players at the latest cutoff (2026-09-24), 18.1% of whom
-stopped playing. 95% bootstrap intervals in parentheses.
+Models on 1,104 held-out players at the latest cutoff (2026-09-24), 18.1% of whom stopped
+playing. 95% bootstrap intervals in parentheses.
 
 | Model | PR-AUC | ROC-AUC | Brier |
 |---|---|---|---|
@@ -33,10 +33,15 @@ stopped playing. 95% bootstrap intervals in parentheses.
 | Recency rule (days since the last game) | 0.455 (0.393, 0.528) | 0.814 (0.784, 0.843) | 0.120 |
 | Logistic regression | 0.452 (0.389, 0.527) | 0.819 (0.790, 0.848) | 0.119 |
 | LightGBM | 0.464 (0.400, 0.541) | 0.825 (0.797, 0.854) | 0.118 |
+| MLP | 0.458 (0.392, 0.532) | 0.821 (0.792, 0.851) | 0.118 |
+| GRU over the last 20 matches | 0.437 (0.373, 0.508) | 0.816 (0.788, 0.845) | 0.120 |
+| LightGBM + GRU average | 0.456 (0.392, 0.533) | 0.824 (0.795, 0.853) | 0.118 |
 
-Neither model clearly beats the recency rule yet: LightGBM's PR-AUC gain is +0.010 (95% CI
--0.031 to +0.055). Its probabilities are well calibrated, and its strongest signals are games in
-the last 7 days and days since the last game.
+No model clearly beats the recency rule yet: LightGBM's PR-AUC gain is +0.010 (95% CI -0.031
+to +0.055). Its probabilities are well calibrated, and its strongest signals are games in the
+last 7 days and days since the last game. The neural nets ([ADR 0012](docs/decisions/0012-neural-nets.md))
+are level with LightGBM: the GRU looked slightly better inside training and slightly worse
+here, and a 200-churner test set can't separate them, so LightGBM stays the headline model.
 
 The [exploratory analysis](notebooks/eda.ipynb) shows why. 69% of churners hadn't played for a
 week or more at the cutoff, and among those players no feature separates a break from quitting
@@ -80,8 +85,8 @@ SQLite, so a stopped run resumes without re-requesting anything.
 ## Tech stack
 
 Python 3.12+ · uv · httpx (async) · pydantic · typer · SQLite · ruff · mypy · pytest + respx ·
-DuckDB + pyarrow · scikit-learn · LightGBM · pandas + matplotlib (notebooks) · pre-commit + gitleaks · GitHub Actions. Later phases add
-PyTorch and Quarto.
+DuckDB + pyarrow · scikit-learn · LightGBM · PyTorch (CPU) · pandas + matplotlib (notebooks) ·
+pre-commit + gitleaks · GitHub Actions. Phase 5 adds Quarto.
 
 ## Setup
 
@@ -146,12 +151,23 @@ The test set is 30% of players, held out completely, at the latest cutoff. Every
 with a 95% bootstrap interval, and the model card says whether each model beats the recency
 rule ("days since the last game"). Design: [ADR 0008](docs/decisions/0008-classical-model-evaluation.md).
 
+**Train the neural nets** (after `train`; CPU, a few minutes):
+
+```bash
+uv run lolret train-nn -c configs/train_nn.yaml   # -> data/models/v1/nn/, adds MLP and GRU to the model card
+```
+
+Same split, folds and calibration as the classical models; settings were chosen inside
+training ([ADR 0012](docs/decisions/0012-neural-nets.md)). `notebooks/train_colab.ipynb` runs
+the same commands on Google Colab.
+
 **Run the forward test** (needs `RIOT_API_KEY`; design in
 [ADR 0011](docs/decisions/0011-forward-test.md)):
 
 ```bash
 uv run lolret forward collect -c configs/forward.yaml            # features at the cutoff (~4-6 h)
 uv run lolret forward predict -c configs/forward.yaml            # freeze; commit the printed hash
+uv run lolret forward predict-nn -c configs/forward.yaml         # optional later entry: the nets
 uv run lolret forward collect -c configs/forward.yaml --labels   # after the 28 days (~1.5 h)
 uv run lolret forward score   -c configs/forward.yaml            # -> data/forward/<name>/report.md
 ```
@@ -170,7 +186,7 @@ uv run lolret status  -c configs/collect.yaml         # progress, from another t
 Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
 `1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
 
-Pipeline commands still to come: `train-nn`, `export`, `predict`.
+Pipeline commands still to come: `export`, `predict`.
 
 ## Scheduled jobs
 

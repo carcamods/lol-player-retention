@@ -2,6 +2,25 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Neural nets
+
+### Added
+- ADR 0012 and `lolret train-nn`: an MLP on the 21 features, a GRU over each example's last
+  20 finished matches, and a LightGBM + GRU average, trained with the 4a split, folds and
+  Platt calibration, 5 seeds each. Settings were chosen by out-of-fold log loss before the
+  test set was scored, and the rule for replacing LightGBM was written down first.
+- Result on the test set: MLP 0.458, GRU 0.437, average 0.456 PR-AUC against LightGBM's
+  0.464, all within the noise, so LightGBM stays the headline model. The model card shows
+  them all.
+- `sequences.sql` and `sequences.parquet` (built by `lolret build`), covered by the leak guard.
+- `lolret forward predict-nn`: the nets enter the forward test as a later entry, retrained on
+  all of `v1`, with their own committed hash.
+- `notebooks/train_colab.ipynb`, an optional Colab launcher.
+
+### Changed
+- PyTorch (CPU wheels) installs by default, so strict type checks and the CI smoke test run
+  everywhere. This amends ADR 0004's optional group.
+
 ## [2026-10-25] Forward test started
 
 ### Added

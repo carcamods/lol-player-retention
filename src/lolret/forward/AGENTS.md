@@ -16,7 +16,9 @@ the question set before freezing: ADR 0011. Config: `configs/forward.yaml`.
   `collect_features` and `collect_labels`, one store per phase.
 - `predict.py`: `freeze_predictions` (features at the cutoff, ladder trained on every labelled
   base example, `entries/ladder.csv`, models, `manifest.json`), entry reading and hash checks.
-- `score.py`: `score_forward` (checks, labels, `evaluate`, `results.json`, `report.md`).
+- `score.py`: `score_forward` (checks, labels, `evaluate`, `results.json`, `report.md`);
+  later entries are also compared with LightGBM.
+- The neural nets' entry lives in `src/lolret/nn/forward.py` (`lolret forward predict-nn`).
 
 ## Rules that must not break
 
