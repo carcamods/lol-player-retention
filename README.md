@@ -203,7 +203,16 @@ uv run lolret status  -c configs/collect.yaml         # progress, from another t
 Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
 `1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
 
-Pipeline commands still to come: `export`.
+**Export the snapshot for the site** (after `train`; no API calls):
+
+```bash
+uv run lolret export -c configs/train.yaml   # -> data/snapshot/v1/snapshot.json
+```
+
+The 1,104 held-out players, numbered "Player 0001"... by a salt that is drawn per export and
+never stored, with each prediction, the outcome, the top drivers and weekly activity. It stays
+under `data/` until it is deliberately copied into the site
+([ADR 0014](docs/decisions/0014-snapshot-export.md)).
 
 ## Scheduled jobs
 

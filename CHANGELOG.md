@@ -2,6 +2,15 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Snapshot export for the site
+
+### Added
+- ADR 0014 and `lolret export` (FR4): `data/snapshot/<dataset>/snapshot.json` with the 1,104
+  held-out players at the latest cutoff, numbered by a salt drawn per export and never stored:
+  region, tier, LightGBM and recency probabilities, outcome, top three SHAP drivers, weekly
+  games from 8 weeks before the cutoff to 4 after, and every model's test metrics. Written
+  under `data/`; publishing waits for the owner's call on how much timeline to show.
+
 ## [2026-10-25] Live prediction for one player
 
 ### Added

@@ -86,8 +86,12 @@ of waiting, and launch doesn't wait for it.
 
 ## Phase 5: launch
 
-- [ ] Snapshot export: salted-hash IDs, JSON for the site, per-player top drivers (FR4).
-- [ ] Test that no Riot ID or PUUID survives the export.
+- [x] Snapshot export: salted-hash IDs, JSON for the site, per-player top drivers (FR4,
+      ADR 0014).
+- [x] Test that no Riot ID or PUUID survives the export (and the `v1` export checked
+      against all 6,048 PUUIDs).
+- [ ] Decide how much of the weekly timeline the site shows: as is, coarsened, or only the
+      weeks before the cutoff (ADR 0014). *Matias*
 - [ ] Quarto site: Overview, Explorer, Model card, Developers (FR5).
 - [ ] "Frozen snapshot, not a live product" banner and Riot's legal disclaimer on every page.
 - [ ] Site works on mobile.

@@ -483,3 +483,28 @@ def predict(
         log.error("%s", exc)
         raise typer.Exit(1) from None
     typer.echo(format_prediction(result))
+
+
+@app.command()
+def export(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
+    """Export the anonymised snapshot of held-out players for the public site.
+
+    Writes data/snapshot/<dataset>/snapshot.json: numbered players, no PUUID or Riot ID.
+    Nothing is published; copying it to the site is a separate, deliberate step.
+    """
+    from lolret.export.snapshot import export_snapshot
+
+    settings = get_settings()
+    try:
+        summary = export_snapshot(
+            load_train_config(config), settings.data_dir, now=datetime.now(UTC)
+        )
+    except FileNotFoundError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    log.info(
+        "Exported %d held-out players (%d churned) to %s.",
+        summary.players,
+        summary.churned,
+        summary.path,
+    )
