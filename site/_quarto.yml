@@ -1,0 +1,35 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "LoL Player Retention"
+  description: "Will a ranked League of Legends player stop playing in the next 28 days?"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: explorer.qmd
+        text: Explorer
+      - href: model-card.qmd
+        text: Model card
+      - href: developers.qmd
+        text: Developers
+    right:
+      - icon: github
+        href: https://github.com/carcamods/lol-player-retention
+        aria-label: Source code on GitHub
+  page-footer:
+    center: |
+      LoL Player Retention isn't endorsed by Riot Games and doesn't reflect the views or opinions
+      of Riot Games or anyone officially involved in producing or managing Riot Games properties.
+      Riot Games, and all associated properties are trademarks or registered trademarks of Riot
+      Games, Inc.
+
+format:
+  html:
+    theme: [cosmo, assets/style.scss]
+    toc: false
+    include-before-body: assets/banner.html
+    smooth-scroll: true
+    link-external-newwindow: true

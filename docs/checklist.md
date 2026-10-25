@@ -92,9 +92,10 @@ of waiting, and launch doesn't wait for it.
       against all 6,048 PUUIDs).
 - [ ] Decide how much of the weekly timeline the site shows: as is, coarsened, or only the
       weeks before the cutoff (ADR 0014). *Matias*
-- [ ] Quarto site: Overview, Explorer, Model card, Developers (FR5).
-- [ ] "Frozen snapshot, not a live product" banner and Riot's legal disclaimer on every page.
-- [ ] Site works on mobile.
+- [x] Quarto site: Overview, Explorer, Model card, Developers (FR5), built on the snapshot.
+- [x] "Frozen snapshot, not a live product" banner and Riot's legal disclaimer on every page.
+- [x] Site works on mobile: no horizontal scroll at 390 px.
+- [ ] Commit the snapshot to `site/data/` once the timeline question is settled. *Matias*
 - [ ] `pages.yml` deploys the site to GitHub Pages.
 - [x] `lolret predict --riot-id Name#TAG` with the developer's own key (FR6).
 - [ ] Try `lolret predict` on your own Riot ID once the collection isn't running. *Matias*

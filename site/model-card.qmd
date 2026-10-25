@@ -1,0 +1,119 @@
+---
+title: "Model card"
+subtitle: "What the models do, how they were tested, and how well they work"
+---
+
+```{ojs}
+//| echo: false
+snapshot = FileAttachment("data/snapshot.json").json()
+labels = ({majority: "Majority class", recency: "Recency rule", logreg: "Logistic regression",
+  lightgbm: "LightGBM", mlp: "MLP", gru: "GRU over the last 20 matches",
+  lightgbm_gru: "LightGBM + GRU average"})
+ci = (v, c) => c ? `${v.toFixed(3)} (${c[0].toFixed(3)}–${c[1].toFixed(3)})` : v.toFixed(3)
+signed = (x) => `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(3)}`
+```
+
+## Task
+
+For a ranked player who played at least once in the 28 days before a cutoff date, predict
+whether they will play **no game at all, in any queue, in the 28 days after it**. Every feature
+uses only data from before the cutoff; a test deletes everything after it and checks that no
+feature changes.
+
+## Data and testing
+
+```{ojs}
+//| echo: false
+html`<p>The models learned from <strong>${snapshot.train.examples.toLocaleString()}</strong>
+examples (${snapshot.train.players.toLocaleString()} players at two earlier cutoffs,
+${(100 * snapshot.train.churn_rate).toFixed(1)}% churn). They are tested on
+<strong>${snapshot.meta.players.toLocaleString()}</strong> other players, held out completely,
+at the cutoff of ${snapshot.meta.cutoff}, when every training label was already known.</p>`
+```
+
+Model choices (regularisation, boosting rounds, network size and length of training, and the
+calibration that turns scores into probabilities) were all made by cross-validation inside the
+training players. The test set chose nothing.
+
+## Results
+
+95% bootstrap intervals in parentheses.
+
+```{ojs}
+//| echo: false
+html`<table class="table table-sm">
+  <thead><tr><th>Model</th><th>PR-AUC</th><th>ROC-AUC</th><th>Brier</th></tr></thead>
+  <tbody>${Object.entries(snapshot.metrics).map(([k, r]) => html`<tr>
+    <td>${labels[k] ?? k}</td><td>${ci(r.pr_auc, r.pr_auc_ci)}</td>
+    <td>${ci(r.roc_auc, r.roc_auc_ci)}</td><td>${ci(r.brier, r.brier_ci)}</td></tr>`)}</tbody>
+</table>`
+```
+
+**Against the recency rule** (ranking by days since the last game), on the same resamples:
+
+```{ojs}
+//| echo: false
+html`<ul>${Object.entries(snapshot.vs_recency).map(([k, c]) => {
+  const [lo, hi] = c.pr_auc_diff_ci
+  const verdict = lo > 0 ? "beats it" : hi < 0 ? "is worse" : "is not clearly better"
+  return html`<li>${labels[k] ?? k} ${verdict}: ${signed(c.pr_auc_diff)} PR-AUC
+    (${signed(lo)} to ${signed(hi)})</li>`
+})}</ul>`
+```
+
+## Are the probabilities right?
+
+When LightGBM says 30%, about 30% of those players should stop. The chart groups the test
+players into ten equal-sized bins by predicted probability.
+
+```{ojs}
+//| echo: false
+bins = {
+  const sorted = [...snapshot.players].sort((a, b) => a.churn - b.churn)
+  const size = Math.ceil(sorted.length / 10)
+  return d3.range(10).map((i) => {
+    const group = sorted.slice(i * size, (i + 1) * size)
+    return {predicted: d3.mean(group, (p) => p.churn), observed: d3.mean(group, (p) => +p.churned), n: group.length}
+  })
+}
+Plot.plot({
+  width: 420,
+  height: 380,
+  marginLeft: 48,
+  marginBottom: 44,
+  x: {label: "Predicted chance of stopping", labelAnchor: "center", labelOffset: 38,
+    domain: [0, 1], tickFormat: "%", grid: true},
+  y: {label: "Share who stopped", domain: [0, 1], tickFormat: "%", grid: true},
+  style: {background: "transparent", color: "#52514e", fontSize: "13px"},
+  marks: [
+    Plot.line([[0, 0], [1, 1]], {stroke: "#c3c2b7", strokeDasharray: "4,3"}),
+    Plot.line(bins, {x: "predicted", y: "observed", stroke: "#2a78d6", strokeWidth: 2}),
+    Plot.dot(bins, {x: "predicted", y: "observed", r: 5, fill: "#2a78d6", stroke: "#fcfcfb", strokeWidth: 2}),
+    Plot.tip(bins, Plot.pointer({x: "predicted", y: "observed",
+      title: (d) => `Predicted ${(100 * d.predicted).toFixed(0)}%, observed ${(100 * d.observed).toFixed(0)}% (${d.n} players)`}))
+  ]
+})
+```
+
+<p class="small-note">The dashed line is perfect calibration.</p>
+
+## The models
+
+- **Majority class:** predicts the overall churn rate for everyone. The floor.
+- **Recency rule:** ranks players by days since their last game. The bar to beat.
+- **Logistic regression** and **LightGBM** on 21 features: weekly game counts, days since the
+  last game, and statistics from the last 20 matches (win rate, losing streak, KDA, game
+  length, queue mix, champion variety, gaps between games, session length).
+- **MLP** on the same features, and a **GRU** that reads the last 20 matches one by one.
+- Probabilities are Platt-calibrated on out-of-fold predictions.
+- Never used as features: ladder wins, losses, LP or tier, which are measured at collection
+  time, after the cutoff.
+
+## Limitations
+
+- Players were sampled from the ranked ladder in October 2026, which under-represents players
+  who quit before the current split.
+- NA, EUW and KR only, Iron to Diamond, and three cutoffs from one season.
+- "Stopped" means no game for 28 days; some of these players come back later.
+- With 200 churners in the test set, differences of a few points of PR-AUC can't be resolved.
+  A forward test with about three times as many is scored after 2026-11-19.

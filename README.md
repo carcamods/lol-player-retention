@@ -65,6 +65,20 @@ outcomes are collected after 2026-11-19. The question, set before freezing: does
 the recency rule on them? Two later entries, frozen the same way before any outcome was
 collected, ask whether the neural nets or five candidate features beat LightGBM.
 
+## The site
+
+A static [Quarto](https://quarto.org) site in [`site/`](site/) shows the snapshot: an overview of
+the results, an explorer with every held-out player's prediction next to what actually
+happened, the model card and a developer page. It reads only the anonymised snapshot from
+`lolret export` and makes no API calls. It is built locally and not yet deployed (see
+[ADR 0014](docs/decisions/0014-snapshot-export.md) for the one decision left before publishing).
+
+```bash
+uv run lolret export -c configs/train.yaml
+cp data/snapshot/v1/snapshot.json site/data/snapshot.json
+quarto preview site
+```
+
 ## Data flow
 
 ```
