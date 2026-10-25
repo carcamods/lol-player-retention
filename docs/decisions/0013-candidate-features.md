@@ -55,6 +55,13 @@ LightGBM with the candidates scored 0.458 PR-AUC (ROC-AUC 0.826) against 0.464 (
 the ladder's LightGBM: a difference of -0.006 (95% CI -0.032 to +0.019). No sign of a gain
 there, which, with this test set's noise, says little either way. The forward test decides.
 
+**Not entered: the player's server.** A later training-only check found that adding the server
+(NA, EUW or KR, known at prediction time and not a ladder field) improved LightGBM's
+out-of-fold log loss slightly on all three sets of folds (by 0.0006 to 0.0022). It was left
+out on purpose: the candidate set had already been fixed and read once on the 4a test, and
+changing it afterwards would blur what the forward test judges. It is a candidate for a later
+round.
+
 ## Consequences
 
 - New `candidates` table and file, `lolret train-candidates`, and
