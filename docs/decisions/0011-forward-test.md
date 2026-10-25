@@ -66,6 +66,16 @@ Each is reported with its freeze date, and none of them changes the question abo
 match lists per frozen player, about 1.5 hours), then `lolret forward score`, which writes
 `report.md` and `results.json` next to the predictions.
 
+## Freezing (2026-10-25)
+
+- Features collection: 6,048 of 6,048 players, 51,697 new requests (match details only; every
+  weekly match list came from `v1`'s cache) in 5 h 51 min, 0 failures.
+- Ladder trained on 11,678 examples from 4,954 players: logistic regression C = 0.03, LightGBM
+  171 rounds.
+- Frozen at 07:06 UTC: 3,718 eligible players, mean LightGBM churn probability 19.2%. Entry
+  `ladder` SHA-256 `dccb1bef0385d95d2c7cd8e918a0f1f80cbb1ba698036f2bcc07474feae27440`, committed
+  in `configs/forward.yaml`. The labels store didn't exist.
+
 ## Consequences
 
 - New module `src/lolret/forward/` and commands `lolret forward collect | predict | score`.

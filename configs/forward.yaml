@@ -11,4 +11,5 @@ train: configs/train.yaml       # model settings, as in Phase 4a
 cutoff: 2026-10-22              # v1's last label window ends here; on its weekly bucket grid
 
 # Frozen predictions: the SHA-256 that step 2 prints, committed before step 3.
-entries: {}
+entries:
+  ladder: dccb1bef0385d95d2c7cd8e918a0f1f80cbb1ba698036f2bcc07474feae27440  # 2026-10-25 07:06 UTC
