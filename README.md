@@ -3,11 +3,28 @@
 Predicts whether a ranked **League of Legends** player will stop playing in the next
 **28 days**, using only what was knowable at prediction time.
 
-> **Status: Phase 4 of 6, models.** The full collection run is done (6,048 players, 11,678
-> eligible examples), the classical models are trained and evaluated, and the exploratory
-> analysis explains the results: see [first results](#first-results). A
-> [forward test](#forward-test) on outcomes that hadn't happened yet is running until
-> 2026-11-19. See the [roadmap](docs/requirements.md#roadmap).
+## In 30 seconds
+
+- **The leak.** My 2024 bootcamp version of this project reported 91% accuracy. It was fake:
+  its features were built from the whole date range, so players who had quit had empty "late"
+  features and the model read the answer off them.
+- **The fix.** This rebuild makes every example a (player, date) pair whose features use only
+  data from before that date, and a property test deletes everything after the date and checks
+  that no feature moves. 6,048 ranked players from NA, EUW and KR, collected from Riot's API.
+- **The result.** Honest and modest: the best model (LightGBM, PR-AUC 0.464) barely beats
+  ranking players by days since their last game (0.455). Neural nets and new features didn't
+  change that, because nothing in a player's history tells a break from quitting. Every
+  choice was made inside training, and every rule for keeping a feature or model was written
+  down before the test.
+- **The proof.** Predictions for 3,718 players were frozen by a committed SHA-256 before their
+  outcomes happened; they are scored after 2026-11-19.
+- **Try it.** `lolret predict --riot-id Name#TAG` predicts for any player with your own key; a
+  static site with an explorer of held-out players is ready to publish ([`site/`](site/)).
+
+> **Status: Phase 5 of 6, launch.** Models, forward test, live prediction, snapshot export and
+> the site are built; publishing waits on one privacy decision
+> ([ADR 0014](docs/decisions/0014-snapshot-export.md)). See the
+> [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 

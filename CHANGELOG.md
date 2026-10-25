@@ -2,6 +2,12 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] README in 30 seconds
+
+### Changed
+- The README opens with the story: the 2024 leak, the fix, the honest result, the frozen
+  forward test, and how to try it. The status line moves to Phase 5.
+
 ## [2026-10-25] The site
 
 ### Added
