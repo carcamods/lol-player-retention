@@ -48,6 +48,10 @@ ForwardOption = Annotated[
     Path, typer.Option("--config", "-c", help="Forward-test config (YAML).", exists=True)
 ]
 DEFAULT_FORWARD_CONFIG = Path("configs/forward.yaml")
+NNConfigOption = Annotated[
+    Path, typer.Option("--config", "-c", help="Neural-net config (YAML).", exists=True)
+]
+DEFAULT_NN_CONFIG = Path("configs/train_nn.yaml")
 
 EXIT_FAILED_REQUESTS = 2
 EXIT_INTERRUPTED = 130
@@ -298,6 +302,33 @@ def forward_predict(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -> None:
     typer.echo(f"  ladder: {summary.sha256}")
 
 
+@forward_app.command("predict-nn")
+def forward_predict_nn(
+    config: ForwardOption = DEFAULT_FORWARD_CONFIG,
+    nn_config: Annotated[
+        Path, typer.Option("--nn-config", help="Neural-net config (YAML).", exists=True)
+    ] = DEFAULT_NN_CONFIG,
+) -> None:
+    """Enter the neural nets in the forward test, after the ladder's hash is committed.
+
+    Runs once, and never once labels exist (ADR 0012).
+    """
+    from lolret.nn.config import load_nn_config  # torch loads only for this command
+    from lolret.nn.forward import NETS, freeze_nn_entry
+
+    settings = get_settings()
+    fwd = _load_forward(config)
+    cfg, _ = load_nn_config(nn_config)
+    try:
+        summary = freeze_nn_entry(fwd, cfg, settings.data_dir, now=datetime.now(UTC))
+    except ForwardError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    log.info("Froze the nets' predictions for %d players in %s.", summary.players, summary.entry)
+    typer.echo(f"Add this under entries in {config} and commit it before collecting labels:")
+    typer.echo(f"  {NETS}: {summary.sha256}")
+
+
 @forward_app.command("score")
 def forward_score(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -> None:
     """Score the frozen predictions against the collected outcomes."""
@@ -322,3 +353,31 @@ def forward_score(config: ForwardOption = DEFAULT_FORWARD_CONFIG) -> None:
             hi,
         )
     log.info("Report in %s", summary.out_dir / REPORT_FILE)
+
+
+@app.command("train-nn")
+def train_nn(config: NNConfigOption = DEFAULT_NN_CONFIG) -> None:
+    """Train the MLP and the GRU on the same split as `train`, and add them to its model card.
+
+    Needs `lolret build` (for the match sequences) and `lolret train` first. Runs on CPU.
+    """
+    from lolret.nn.config import load_nn_config  # torch loads only for this command
+    from lolret.nn.train import MissingLadderError, train_nn_and_evaluate
+
+    settings = get_settings()
+    cfg, train_cfg = load_nn_config(config)
+    try:
+        summary = train_nn_and_evaluate(cfg, train_cfg, settings.data_dir)
+    except (MissingLadderError, FileNotFoundError) as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    for name, r in summary.test.items():
+        c = summary.vs_lightgbm[name]
+        log.info(
+            "%-12s PR-AUC %.3f  ROC-AUC %.3f  vs LightGBM %+.3f",
+            name,
+            r["pr_auc"],
+            r["roc_auc"],
+            c["pr_auc_diff"],
+        )
+    log.info("Nets in %s; metrics.json and model_card.md updated.", summary.out_dir)

@@ -55,13 +55,16 @@ else is code or docs, delivered as a PR that Matias reviews.
 
 ## Phase 4b: neural nets
 
-- [ ] Sequence dataset: each player's last ~20 matches before the cutoff, under the same leak guard.
-- [ ] MLP on the tabular features.
-- [ ] GRU over the match sequence, plus the static features.
-- [ ] Training loop: early stopping, fixed seeds, YAML configs, `state_dict` artifacts.
-- [ ] CPU smoke test in CI: one epoch on a tiny fixture, the loss falls, output shapes are right.
-- [ ] Colab launcher notebook; repo access through Colab Secrets, never written in the notebook. *Run: Matias*
-- [ ] MLP, GRU and a LightGBM + GRU average added to the comparison table and model card.
+- [x] Sequence dataset: each player's last ~20 matches before the cutoff, under the same leak guard
+      (ADR 0012).
+- [x] MLP on the tabular features.
+- [x] GRU over the match sequence, plus the static features.
+- [x] Training loop: early stopping, fixed seeds, YAML configs, `state_dict` artifacts.
+- [x] CPU smoke test in CI: a few epochs on a tiny fixture, the loss falls, output shapes are right.
+- [x] Colab launcher notebook; repo access through Colab Secrets, never written in the notebook.
+- [ ] Optional: run the Colab launcher once. CPU training takes minutes, so it isn't needed. *Run: Matias*
+- [x] MLP, GRU and a LightGBM + GRU average added to the comparison table and model card: all
+      level with LightGBM, which stays the headline model (ADR 0012).
 - [ ] Decide on a public Weights & Biases report. *Matias*
 - [ ] Stretch: integrated gradients per match (Captum).
 
@@ -73,7 +76,7 @@ of waiting, and launch doesn't wait for it.
 - [x] Predict for every eligible player at a cutoff of "today". Commit the file's SHA-256 so
       the predictions provably weren't changed after the fact. Cutoff 2026-10-22, 3,718
       players, frozen 2026-10-25 (ADR 0011, `configs/forward.yaml`).
-- [ ] Optional: enter the 4b neural nets as later entries, before the labels are collected.
+- [x] Enter the 4b neural nets as a later entry, before the labels are collected (ADR 0012).
 - [ ] After 2026-11-19 00:00 UTC: `lolret forward collect --labels` (about 1.5 h), then
       `lolret forward score`. *Run: Matias*
 - [ ] Add the result to the model card and the site.

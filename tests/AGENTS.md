@@ -1,6 +1,7 @@
 # Tests
 
-`uv run pytest`: no network, no API key, about 7 seconds. CI runs it on Python 3.12 and 3.13.
+`uv run pytest`: no network, no API key, under a minute (the neural-net tests train tiny nets
+on CPU). CI runs it on Python 3.12 and 3.13.
 
 ## Conventions
 
@@ -30,4 +31,5 @@ one (see `src/lolret/dataset/AGENTS.md`).
 | Collection | `test_collect_config.py`, `test_store.py`, `test_history.py`, `test_collect_run.py`, `test_notify.py` |
 | Dataset | `test_dataset.py`, `test_fixtures.py` |
 | Models | `test_model.py` |
+| Neural nets | `test_nn.py` (CPU smoke test included) |
 | Forward test | `test_forward.py` |

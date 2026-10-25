@@ -41,6 +41,20 @@ notebooks = [
     "nbconvert>=7.17.2",
     "pandas>=3.1.0",
 ]
+nn = ["torch>=2.14.1"]
+
+[tool.uv]
+# The neural nets' tests and strict type checks need torch, so it installs by default.
+default-groups = ["dev", "nn"]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+# CPU wheels: a fraction of the CUDA build's size; Colab brings its own GPU build.
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.ruff]
 line-length = 100

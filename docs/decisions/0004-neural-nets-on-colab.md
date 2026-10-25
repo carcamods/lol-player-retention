@@ -1,6 +1,6 @@
 # 0004: Neural nets in PyTorch, trained on Google Colab
 
-**Status:** Accepted, 2026-10-22
+**Status:** Accepted, 2026-10-22; dependency group and training location amended by 0012
 
 ## Context
 

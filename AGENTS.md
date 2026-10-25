@@ -25,9 +25,11 @@ changing code in that folder. Read what the task needs, not the whole repo.
 - **Forward test (ADR 0011):** started 2026-10-25 at cutoff 2026-10-22. Predictions for the
   3,718 eligible players are frozen and their SHA-256 is committed in `configs/forward.yaml`.
   After 2026-11-19 the owner runs `lolret forward collect --labels`, then `lolret forward score`.
-- **Next:** 4b neural nets (same split and `evaluate()` as 4a), entered in the forward test
-  before its labels are collected if they're ready.
-- **Later:** score the forward test, 5 site and launch. See the roadmap.
+- **Neural nets (ADR 0012):** MLP, GRU over the last 20 matches, and a LightGBM + GRU
+  average, trained on CPU with the 4a protocol (`lolret train-nn`). All level with LightGBM
+  on the test set (GRU 0.437, MLP 0.458), so LightGBM stays the headline model. The nets are
+  entered in the forward test as a later entry.
+- **Next:** score the forward test after 2026-11-19, then 5 site and launch. See the roadmap.
 
 ## Where things live (read on demand)
 
@@ -39,12 +41,12 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/forward/`, `notebooks/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/nn/`, `src/lolret/forward/`, `notebooks/`, `tests/`, `docs/` |
 
 ## Commands
 
 ```bash
-uv sync                                   # install
+uv sync                                   # install (includes CPU PyTorch)
 uv sync --group notebooks                 # plus pandas, matplotlib, Jupyter kernel
 uv run pytest                             # tests: no network, no key
 uv run mypy src tests                     # types (strict)
@@ -52,6 +54,7 @@ uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
 uv run lolret status -c configs/collect.yaml
 uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
+uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train
 uv run lolret forward collect|predict|score -c configs/forward.yaml   # forward test, ADR 0011
 ```
 

@@ -19,6 +19,7 @@ import yaml
 from conftest import REPO_ROOT
 from test_model import config as train_config
 from test_model import write_examples
+from test_nn import nn_config, write_sequences
 from typer.testing import CliRunner
 
 from lolret.cli import app
@@ -41,6 +42,8 @@ from lolret.forward.predict import (
 )
 from lolret.forward.score import REPORT_FILE, score_forward
 from lolret.model.train import examples_path
+from lolret.nn.data import sequences_path
+from lolret.nn.forward import freeze_nn_entry
 from lolret.riot.client import RiotClient, RiotResponse
 
 CUTOFF = datetime(2026, 10, 22, tzinfo=UTC)
@@ -361,3 +364,35 @@ def test_a_freeze_that_fails_midway_can_run_again(
     summary = freeze_predictions(fwd, data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
 
     assert summary.sha256 == file_hash(summary.entry)
+
+
+def test_nets_enter_after_the_ladder_and_are_scored_against_lightgbm(
+    world: tuple[Forward, Path],
+) -> None:
+    fwd, data_dir = world
+    write_sequences(sequences_path(data_dir, "base"), examples_path(data_dir, "base"))
+    run_features(fwd, data_dir, datetime(2026, 10, 25, tzinfo=UTC))
+    with pytest.raises(ForwardError, match="no frozen entries"):  # the ladder comes first
+        freeze_nn_entry(fwd, nn_config(), data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
+    ladder = freeze_predictions(fwd, data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
+    fwd = load_forward(write_configs(data_dir.parent, {"ladder": ladder.sha256}))
+
+    nets = freeze_nn_entry(fwd, nn_config(), data_dir, now=datetime(2026, 10, 26, tzinfo=UTC))
+
+    players, preds = read_entry(nets.entry)
+    assert set(preds) == {"mlp", "gru", "lightgbm_gru"}
+    assert set(players.tolist()) == set(read_entry(ladder.entry)[0].tolist())
+    with pytest.raises(ForwardError, match="already frozen"):
+        freeze_nn_entry(fwd, nn_config(), data_dir, now=datetime(2026, 10, 26, tzinfo=UTC))
+
+    entries = {"ladder": ladder.sha256, "nn": nets.sha256}
+    fwd = load_forward(write_configs(data_dir.parent, entries))
+    run_labels(fwd, data_dir, LABEL_END)
+    scored = score_forward(fwd, data_dir, now=LABEL_END)
+
+    assert {"lightgbm", "mlp", "gru", "lightgbm_gru"} <= set(scored.results)
+    results = json.loads((scored.out_dir / "results.json").read_text(encoding="utf-8"))
+    assert set(results["vs_lightgbm"]) == {"mlp", "gru", "lightgbm_gru"}
+    assert "Later entries against LightGBM" in (scored.out_dir / REPORT_FILE).read_text(
+        encoding="utf-8"
+    )

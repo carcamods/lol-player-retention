@@ -52,3 +52,20 @@ the eligibility rule are in [ADR 0006](decisions/0006-eligible-population.md).
 Missing values are deliberate: a player whose only recent game was still running at T has
 activity counts but no match features. LightGBM handles them natively; logistic regression
 imputes the training median and adds a missing-value indicator (ADR 0008).
+
+## Match sequences (for the neural nets)
+
+`sequences.parquet` has one row per (player, cutoff, game) for the same 20 most recent games
+that ended before T, `rn` = 1 being the most recent (`src/lolret/dataset/sequences.sql`). The
+GRU reads them oldest first (ADR 0012).
+
+| Column | Definition |
+|---|---|
+| `rn` | Position, 1 = the most recent game before T. |
+| `hours_before_cutoff` | Hours from the game's end to T. |
+| `gap_hours` | Hours from the previous game's end to this game's start; NULL for the oldest game in view. |
+| `duration_min` | Game length in minutes. |
+| `win`, `kills`, `deaths`, `assists` | The player's result and score. |
+| `remake`, `surrendered` | Ended by an early-surrender vote; ended by any surrender. |
+| `queue_id`, `team_position` | Queue (420 Solo/Duo, 440 Flex, 450 ARAM...) and role, NULL off Summoner's Rift. |
+| `same_champion` | Same champion as the previous game; NULL for the oldest game in view. |

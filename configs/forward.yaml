@@ -13,3 +13,4 @@ cutoff: 2026-10-22              # v1's last label window ends here; on its weekl
 # Frozen predictions: the SHA-256 that step 2 prints, committed before step 3.
 entries:
   ladder: dccb1bef0385d95d2c7cd8e918a0f1f80cbb1ba698036f2bcc07474feae27440  # 2026-10-25 07:06 UTC
+  nn: bb8b342304410c8457de3a6d45a0b2d64529b33b5dcd6cad16d651fe4c6b0e27  # 2026-10-25 07:17 UTC (ADR 0012)

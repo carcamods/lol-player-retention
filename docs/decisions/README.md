@@ -16,6 +16,7 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | [0009](0009-agents-md.md) | Context files are named `AGENTS.md`, the cross-tool format, instead of `CLAUDE.md` | Accepted |
 | [0010](0010-break-features.md) | Break features tried under a rule set in advance; not met, so removed | Accepted |
 | [0011](0011-forward-test.md) | Forward test at the 2026-10-22 cutoff: ladder retrained on all of `v1`, predictions frozen by a committed hash, scored after 2026-11-19 | Accepted |
+| [0012](0012-neural-nets.md) | Neural nets: leak-guarded match sequences, CPU training with the 4a protocol, and the rule for replacing LightGBM | Accepted |
 
 ## Template
 
