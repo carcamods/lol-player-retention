@@ -9,7 +9,8 @@ timeline to show (ADR 0014).
 
 ## Files
 
-- `snapshot.py`: `anonymous_ids` (salted-hash order → "Player 0001"...), `export_snapshot`.
+- `snapshot.py`: `anonymous_ids` (salted-hash order → "Player 0001"...), `forward_summary`
+  (the forward test's status, hashes and, once scored, its aggregate results), `export_snapshot`.
 
 ## Rules that must not break
 

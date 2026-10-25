@@ -7,12 +7,14 @@ from pathlib import Path
 import duckdb
 import pytest
 from conftest import REPO_ROOT
+from test_forward import write_configs
 from test_model import CUTOFFS, write_examples
 from test_model import config as train_config
 from typer.testing import CliRunner
 
 from lolret.cli import app
-from lolret.export.snapshot import anonymous_ids, export_snapshot
+from lolret.export.snapshot import anonymous_ids, export_snapshot, forward_summary
+from lolret.forward.config import load_forward
 from lolret.model.data import load_examples, split_by_player_and_time
 from lolret.model.train import examples_path, train_and_evaluate
 
@@ -126,3 +128,39 @@ def test_cli_export_needs_trained_models(tmp_path: Path, monkeypatch: pytest.Mon
     result = CliRunner().invoke(app, ["export", "-c", cfg])
 
     assert result.exit_code == 1
+
+
+def test_the_forward_test_is_reported_as_pending_then_scored(tmp_path: Path) -> None:
+    fwd = load_forward(write_configs(tmp_path, {"ladder": "a" * 64}))
+    data_dir = tmp_path / "data"
+    out = data_dir / "forward" / fwd.name
+    out.mkdir(parents=True)
+
+    assert forward_summary(fwd, data_dir)["status"] == "not started"
+
+    manifest = {"frozen_at": "2026-10-25T07:00:00+00:00", "forward_examples": {"eligible": 3718}}
+    (out / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    pending = forward_summary(fwd, data_dir)
+
+    assert pending["status"] == "pending"
+    assert (pending["players"], pending["frozen_at"]) == (3718, "2026-10-25")
+    assert pending["entries"] == {"ladder": "a" * 64}
+    assert pending["outcomes_until"] == "2026-11-19"
+
+    metric = {"pr_auc": 0.5, "pr_auc_ci": [0.4, 0.6], "roc_auc": 0.8, "brier": 0.1, "log_loss": 1}
+    results = {
+        "scored_at": "2026-11-20T10:00:00+00:00",
+        "players": 3718,
+        "churned": 650,
+        "results": {"recency": metric, "lightgbm": metric},
+        "vs_baseline": {"lightgbm": {"pr_auc_diff": 0.0, "pr_auc_diff_ci": [-0.1, 0.1]}},
+        "vs_lightgbm": {},
+        "reliability": {"lightgbm": []},
+    }
+    (out / "results.json").write_text(json.dumps(results), encoding="utf-8")
+    scored = forward_summary(fwd, data_dir)
+
+    assert scored["status"] == "scored"
+    assert scored["churned"] == 650
+    assert set(scored["metrics"]["lightgbm"]) == {"pr_auc", "pr_auc_ci", "roc_auc", "brier"}
+    assert "reliability" not in scored

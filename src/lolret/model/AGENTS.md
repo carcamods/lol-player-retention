@@ -16,7 +16,8 @@ beats the recency rule yet. A test set with fewer than 200 churners marks the mo
 - `models.py`: `Majority`, `Recency`, `LogReg`, `GBM`, `Platt`, `player_folds`,
   `select_logreg`, `cv_lightgbm`, and `Ladder` (predict, save, load).
 - `evaluate.py`: `scores`, `evaluate` (bootstrap intervals and the paired difference from the
-  baseline), `reliability`, `lightgbm_importance`.
+  baseline), `by_group` (scores per region and tier, reporting only), `reliability`,
+  `lightgbm_importance`.
 - `train.py`: `fit_ladder` (selection, calibration and fitting; also used by the forward test)
   and `train_and_evaluate`, which writes `data/models/<dataset>/`: `models.json`,
   `lightgbm.txt`, `metrics.json`, `model_card.md`.

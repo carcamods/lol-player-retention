@@ -36,7 +36,8 @@ with 200 churners.
 //| echo: false
 labels = ({majority: "Majority class", recency: "Recency rule (days since the last game)",
   logreg: "Logistic regression", lightgbm: "LightGBM", mlp: "MLP",
-  gru: "GRU over the last 20 matches", lightgbm_gru: "LightGBM + GRU average"})
+  gru: "GRU over the last 20 matches", lightgbm_gru: "LightGBM + GRU average",
+  lightgbm_candidates: "LightGBM with the candidate features"})
 html`<table class="table table-sm">
   <thead><tr><th>Model</th><th>PR-AUC</th><th>ROC-AUC</th><th>Brier</th></tr></thead>
   <tbody>${Object.entries(m).map(([k, r]) => html`<tr>
@@ -65,11 +66,31 @@ were bucketed by date across all players, so a player who had quit was the one w
 before the prediction date only, and a test deletes everything after that date and checks that
 no feature changes.
 
-## What's next: a forward test
+## The forward test
 
-On 2026-10-25, the models predicted for 3,718 players whether they would play between
-2026-10-22 and 2026-11-19. The predictions were frozen and their fingerprint (SHA-256) was
-committed to the repository before any of those weeks was collected, so they can't be adjusted
-after the fact. They are scored after 2026-11-19, on outcomes nobody had seen.
+```{ojs}
+//| echo: false
+fwd = snapshot.forward
+signed = (x) => `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(3)}`
+!fwd || fwd.status === "not started" ? html`<p>A forward test on outcomes that haven't happened
+yet is being prepared.</p>` : fwd.status === "pending" ? html`<p>On ${fwd.frozen_at}, the
+models predicted for <strong>${fwd.players.toLocaleString()}</strong> players whether they would
+play between ${fwd.cutoff} and ${fwd.outcomes_until}. The predictions were frozen and their
+fingerprint (SHA-256) was committed to the repository before any of those weeks was collected,
+so they can't be adjusted after the fact. They are scored after ${fwd.outcomes_until}, on
+outcomes nobody had seen.</p>
+<p class="small-note">Frozen entries: ${Object.entries(fwd.entries).map(([k, h]) =>
+html`<code>${k}</code> ${h.slice(0, 12)}… `)}</p>` : html`<p>Predictions frozen before
+${fwd.cutoff} met their outcomes on ${fwd.scored_at}: ${fwd.players.toLocaleString()} players,
+${fwd.churned.toLocaleString()} of whom stopped playing.</p>
+<table class="table table-sm"><thead><tr><th>Model</th><th>PR-AUC (95% CI)</th>
+<th>ROC-AUC</th></tr></thead><tbody>${Object.entries(fwd.metrics).map(([k, r]) => html`<tr>
+<td>${labels[k] ?? k}</td><td>${r.pr_auc.toFixed(3)} (${r.pr_auc_ci[0].toFixed(3)}–${r.pr_auc_ci[1].toFixed(3)})</td>
+<td>${r.roc_auc.toFixed(3)}</td></tr>`)}</tbody></table>
+<p>LightGBM against the recency rule, the question set before freezing:
+<strong>${signed(fwd.vs_recency.lightgbm.pr_auc_diff)}</strong> PR-AUC
+(${signed(fwd.vs_recency.lightgbm.pr_auc_diff_ci[0])} to
+${signed(fwd.vs_recency.lightgbm.pr_auc_diff_ci[1])}).</p>`
+```
 
 [Explore the predictions →](explorer.qmd){.btn .btn-primary}

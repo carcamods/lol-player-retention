@@ -240,6 +240,9 @@ Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: 
 uv run lolret export -c configs/train.yaml   # -> data/snapshot/v1/snapshot.json
 ```
 
+It also carries the forward test's status from `configs/forward.yaml`: pending, with its
+frozen hashes, until it is scored, then its results, so the site updates with one export.
+
 The 1,104 held-out players, numbered "Player 0001"... by a salt that is drawn per export and
 never stored, with each prediction, the outcome, the top drivers and weekly activity. It stays
 under `data/` until it is deliberately copied into the site
