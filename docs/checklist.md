@@ -100,7 +100,9 @@ of waiting, and launch doesn't wait for it.
 - [x] `pages.yml` deploys the site to GitHub Pages, run by hand only.
 - [ ] First deploy: commit the snapshot, set Pages' source to GitHub Actions, run `pages.yml`. *Matias*
 - [x] `lolret predict --riot-id Name#TAG` with the developer's own key (FR6).
-- [ ] Try `lolret predict` on your own Riot ID once the collection isn't running. *Matias*
+- [x] `lolret predict` checked against the real API on three sampled players, one per region
+      (2026-10-25; no identifier printed).
+- [ ] Optional: try `lolret predict` on your own Riot ID. *Matias*
 - [x] README tells the story in 30 seconds: the 2024 leak, the fix, the result, the proof.
 - [ ] Add the site link to the README once it is live. *Matias*
 - [x] Full-history gitleaks scan returns zero findings (2026-10-25: every branch, 26 commits;

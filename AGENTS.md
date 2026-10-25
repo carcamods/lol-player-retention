@@ -9,37 +9,26 @@ This file is a map, read at the start of every session by Claude Code, Codex and
 that use `AGENTS.md`. Each module has its own `AGENTS.md` with its context: read it before
 changing code in that folder. Read what the task needs, not the whole repo.
 
-## Active work (updated 2026-10-24)
+## Active work (updated 2026-10-25)
 
-- **Done:** Phase 1 foundation, Phase 2 collection, Phase 3 dataset (`lolret build`) and EDA
-  (`notebooks/eda.ipynb`), Phase 4a classical models (`lolret train`, ADR 0008). Run `v1` finished 2026-10-24: 6,048 players,
-  0 failures, 11,678 eligible examples, churn 17-19% at every cutoff. Never delete or rewrite
+- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built except publishing. Run `v1`:
+  6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never delete or rewrite
   `data/`.
-- **Results:** on the test set LightGBM reaches PR-AUC 0.464 against 0.455 for the recency
-  rule, and the gain's 95% interval includes zero, so no model clearly beats recency yet
-  (README; full model card in `data/models/v1/`). The EDA shows why: 69% of churners hadn't
-  played for 7+ days, and inside those groups no feature beats AUC 0.60; in-game statistics
-  carry almost no signal anywhere.
-- **Feature round (ADR 0010):** four break features lifted LightGBM to PR-AUC 0.476 but
-  failed the rule set before training, so they were removed (code kept in commit `40b421a`).
-- **Forward test (ADR 0011):** started 2026-10-25 at cutoff 2026-10-22. Predictions for the
-  3,718 eligible players are frozen and their SHA-256 is committed in `configs/forward.yaml`.
-  After 2026-11-19 the owner runs `lolret forward collect --labels`, then `lolret forward score`.
-- **Neural nets (ADR 0012):** MLP, GRU over the last 20 matches, and a LightGBM + GRU
-  average, trained on CPU with the 4a protocol (`lolret train-nn`). All level with LightGBM
-  on the test set (GRU 0.437, MLP 0.458), so LightGBM stays the headline model. The nets are
-  entered in the forward test as a later entry.
-- **Candidate features (ADR 0013):** the four break features plus `repeated_teammates`, kept in
-  `candidates.parquet` apart from `FEATURES`. Level with LightGBM on the 4a test (0.458), which
-  decides nothing; entered in the forward test, which decides whether they join the model.
-- **Phase 5 started:** `lolret predict --riot-id Name#TAG` (FR6) predicts live for one player
-  with the developer's key, through the training feature code. `lolret export` (FR4, ADR 0014)
-  writes the anonymised snapshot of the 1,104 held-out players under `data/`; the owner decides
-  how much of the weekly timeline to publish before it goes into the site.
-- **Site (`site/`):** the four Quarto pages, built and checked locally on the snapshot, not
-  deployed. Waiting on the ADR 0014 timeline decision before the snapshot is committed.
-- **Next (owner):** decide the timeline question, then publish and deploy; score the forward
-  test after 2026-11-19. See the roadmap and the checklist.
+- **Results (4a test, 200 churners):** LightGBM 0.464 PR-AUC against 0.455 for the recency rule,
+  not a clear win. MLP 0.458, GRU 0.437 (ADR 0012) and the candidate features 0.458 (ADR 0013)
+  are all level with LightGBM, which stays the headline model. Tuning LightGBM gains only noise.
+  The EDA explains the ceiling: nothing in a player's history tells a break from quitting.
+- **Forward test (ADR 0011), waiting:** three entries frozen on 2026-10-25 for the 3,718 players
+  eligible at 2026-10-22, hashes in `configs/forward.yaml`: `ladder` (07:06 UTC), `nn` (07:17),
+  `candidates` (07:19). After 2026-11-19 00:00 UTC the owner runs `lolret forward collect
+  --labels`, then `lolret forward score`, then `lolret export` for the site. The headline
+  question: does LightGBM beat the recency rule? The forward test also decides whether the
+  candidate features join the model (ADR 0013).
+- **Phase 5:** `lolret predict` (checked against the real API), `lolret export` (ADR 0014) and the
+  Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. Publishing
+  waits on the owner's ADR 0014 call about the weekly timeline; `pages.yml` deploys by hand only.
+- **Next (owner):** the ADR 0014 decision, then commit the snapshot and run `pages.yml`; score
+  the forward test after 2026-11-19. The checklist lists every owner task.
 
 ## Where things live (read on demand)
 

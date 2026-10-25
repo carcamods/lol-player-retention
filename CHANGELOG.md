@@ -2,6 +2,20 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Forward test frozen; session checkpoint
+
+### Added
+- The forward test's three entries are frozen and their hashes committed in
+  `configs/forward.yaml`: the ladder at 07:06 UTC, the nets at 07:17, the candidates at 07:19,
+  all for the 3,718 players eligible at 2026-10-22. The features collection took 51,697
+  requests in 5 h 51 min with 0 failures.
+- `lolret predict` was checked against the real API on three sampled players (one per region),
+  printing no identifier: the Riot IDs resolved to the same accounts, two got predictions and
+  one, with no game in 28 days, was reported as not covered.
+
+### Changed
+- The root `AGENTS.md` "Active work" and the checklist reflect the merged state (#11 to #20).
+
 ## [2026-10-25] Dark mode for the site; tuning checked
 
 ### Added
