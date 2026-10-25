@@ -33,8 +33,10 @@ changing code in that folder. Read what the task needs, not the whole repo.
   `candidates.parquet` apart from `FEATURES`. Level with LightGBM on the 4a test (0.458), which
   decides nothing; entered in the forward test, which decides whether they join the model.
 - **Phase 5 started:** `lolret predict --riot-id Name#TAG` (FR6) predicts live for one player
-  with the developer's key, through the training feature code.
-- **Next:** snapshot export and the site (Phase 5); score the forward test after 2026-11-19.
+  with the developer's key, through the training feature code. `lolret export` (FR4, ADR 0014)
+  writes the anonymised snapshot of the 1,104 held-out players under `data/`; the owner decides
+  how much of the weekly timeline to publish before it goes into the site.
+- **Next:** the Quarto site (needs Quarto installed); score the forward test after 2026-11-19.
   See the roadmap.
 
 ## Where things live (read on demand)
@@ -47,7 +49,7 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/nn/`, `src/lolret/forward/`, `src/lolret/live/`, `notebooks/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/nn/`, `src/lolret/forward/`, `src/lolret/live/`, `src/lolret/export/`, `notebooks/`, `tests/`, `docs/` |
 
 ## Commands
 
@@ -63,6 +65,7 @@ uv run lolret train  -c configs/train.yaml
 uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train
 uv run lolret train-candidates -c configs/train.yaml                # candidate features, ADR 0013
 uv run lolret predict --riot-id Name#TAG --platform euw1           # live, with your own key
+uv run lolret export -c configs/train.yaml                          # snapshot for the site
 uv run lolret forward collect|predict|score -c configs/forward.yaml   # forward test, ADR 0011
 ```
 
