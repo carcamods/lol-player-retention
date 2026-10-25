@@ -40,7 +40,9 @@ the last 7 days and days since the last game.
 The [exploratory analysis](notebooks/eda.ipynb) shows why. 69% of churners hadn't played for a
 week or more at the cutoff, and among those players no feature separates a break from quitting
 much better than recency does (AUC 0.60 at best inside those groups). In-game statistics such as
-win rate and KDA carry almost no signal at all.
+win rate and KDA carry almost no signal at all. Four features aimed at that gap (break history,
+the longest previous gap, account level) lifted LightGBM to 0.476, but didn't pass the rule set
+before training, so they were dropped ([ADR 0010](docs/decisions/0010-break-features.md)).
 
 ## Data flow
 

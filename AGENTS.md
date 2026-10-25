@@ -20,9 +20,10 @@ changing code in that folder. Read what the task needs, not the whole repo.
   (README; full model card in `data/models/v1/`). The EDA shows why: 69% of churners hadn't
   played for 7+ days, and inside those groups no feature beats AUC 0.60; in-game statistics
   carry almost no signal anywhere.
-- **Next (owner decides):** features that tell a break from quitting (earlier breaks and
-  returns, activity over a longer window than 8 weeks, account age) before 4b, or go straight
-  to 4b.
+- **Feature round (ADR 0010):** four break features lifted LightGBM to PR-AUC 0.476 but
+  failed the rule set before training, so they were removed (code kept in commit `40b421a`).
+- **Next:** start the 4c forward test, which needs 28 days of waiting, then 4b neural nets
+  while it runs.
 - **Later:** 4b neural nets on Colab (same split and `evaluate()` as 4a), 4c forward test,
   5 site and launch. See the roadmap.
 

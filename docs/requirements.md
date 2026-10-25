@@ -113,7 +113,7 @@ before the current split started. All cutoffs are chosen after the split start.
 | 1 | Foundation: repo, docs, tooling, CI | Done |
 | 2 | Riot client and `collect` (FR1) | Done; full run in progress |
 | 3 | Point-in-time dataset, leak-guard test, EDA (FR2) | Done (run `v1`: 6,048 players, 11,678 eligible examples; EDA in `notebooks/eda.ipynb`) |
-| 4a | Classical models, evaluation, model card (FR3) | Done (ADR 0008); no model clearly beats the recency rule yet (README) |
+| 4a | Classical models, evaluation, model card (FR3) | Done (ADR 0008); no model clearly beats the recency rule; break features tried and dropped (ADR 0010) |
 | 4b | Neural nets on Colab (FR3b) | — |
 | 4c | Forward test: predict at today's cutoff, collect again 28 days later, compare (ADR 0006) | — |
 | 5 | Snapshot export, Quarto site, `predict` CLI, go public (FR4–FR6) | — |

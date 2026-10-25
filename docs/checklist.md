@@ -49,8 +49,9 @@ else is code or docs, delivered as a PR that Matias reviews.
       rule yet (README, *First results*).
 - [x] Check whether churn really rises at the latest cutoff (37% against 20–24% on the
       first 122 players). It doesn't: 17–19% at every cutoff, and calibration holds.
-- [ ] Decide: features that tell a break from quitting first, or straight to 4b (EDA
-      findings, #9). *Matias*
+- [x] Decide: features that tell a break from quitting first, or straight to 4b. Features
+      first.
+- [x] Break-feature round under a rule set in advance: not met, features removed (ADR 0010).
 
 ## Phase 4b: neural nets
 
