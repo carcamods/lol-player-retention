@@ -5,8 +5,8 @@ A static site: Overview, Explorer, Model card, Developers. Every number and char
 (ADR 0002).
 
 **Status:** built and checked locally (2026-10-25), not deployed. The snapshot isn't committed
-yet: the owner first decides how much of the weekly timeline to publish (ADR 0014). There is no
-deploy workflow yet; deploying is the owner's call.
+yet: the owner first decides how much of the weekly timeline to publish (ADR 0014). Deploying
+is the owner's call: `pages.yml` runs only by hand.
 
 ## Files
 
@@ -33,6 +33,14 @@ uv run lolret export -c configs/train.yaml
 cp data/snapshot/v1/snapshot.json site/data/snapshot.json   # local copy, git-ignored
 quarto preview site                                         # or: quarto render site
 ```
+
+CI builds the site on every PR that touches it, on a demo snapshot of random values
+(`python -m lolret.export.demo`, `.github/workflows/site.yml`); a test keeps the demo's structure
+equal to a real export's.
+
+**Deploying** is `.github/workflows/pages.yml`, run by hand from the Actions tab, once the
+snapshot is committed (delete its line in `.gitignore`) and Pages' source is set to GitHub
+Actions. It refuses to run without a committed snapshot.
 
 Quarto isn't a Python dependency: install it from quarto.org. On Windows, don't serve
 `site/_site` from inside that folder while rendering: the lock makes the render fail.

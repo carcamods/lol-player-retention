@@ -96,7 +96,9 @@ of waiting, and launch doesn't wait for it.
 - [x] "Frozen snapshot, not a live product" banner and Riot's legal disclaimer on every page.
 - [x] Site works on mobile: no horizontal scroll at 390 px.
 - [ ] Commit the snapshot to `site/data/` once the timeline question is settled. *Matias*
-- [ ] `pages.yml` deploys the site to GitHub Pages.
+- [x] CI builds the site on a demo snapshot on every PR that touches it (`site.yml`).
+- [x] `pages.yml` deploys the site to GitHub Pages, run by hand only.
+- [ ] First deploy: commit the snapshot, set Pages' source to GitHub Actions, run `pages.yml`. *Matias*
 - [x] `lolret predict --riot-id Name#TAG` with the developer's own key (FR6).
 - [ ] Try `lolret predict` on your own Riot ID once the collection isn't running. *Matias*
 - [x] README tells the story in 30 seconds: the 2024 leak, the fix, the result, the proof.

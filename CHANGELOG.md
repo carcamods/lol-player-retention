@@ -2,6 +2,19 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] The site builds in CI
+
+### Added
+- `.github/workflows/site.yml`: renders the site on a demo snapshot of random values
+  (`python -m lolret.export.demo`) on every PR that touches the site or the export. A test keeps
+  the demo's structure equal to a real export's.
+- `.github/workflows/pages.yml`: deploys the site to GitHub Pages, only when run by hand, and
+  only with a committed snapshot.
+
+### Changed
+- `.gitignore` re-includes `site/data/` and ignores only the snapshot file, so publishing it is
+  one deleted line.
+
 ## [2026-10-25] The site shows the forward test
 
 ### Added
