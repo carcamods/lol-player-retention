@@ -80,7 +80,7 @@ def _check_sizes(train: Examples, test: Examples, cv_folds: int) -> None:
         )
 
 
-def _describe(examples: Examples) -> dict[str, Any]:
+def describe(examples: Examples) -> dict[str, Any]:
     return {
         "examples": len(examples),
         "players": len(np.unique(examples.player)),
@@ -90,8 +90,37 @@ def _describe(examples: Examples) -> dict[str, Any]:
     }
 
 
-def _sha256(path: Path) -> str:
+def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def fit_ladder(train: Examples, cfg: TrainConfig) -> tuple[Ladder, dict[str, Any]]:
+    """Fit every model on `train`, choosing settings and calibration by player-grouped CV.
+
+    Returns the ladder and what was selected (C, rounds, Platt parameters).
+    """
+    folds = player_folds(train.player, cfg.cv_folds, cfg.seed)
+    c, logreg_oof, cv_log_loss = select_logreg(train.x, train.y, folds, cfg.logreg_c)
+    gbm_oof, rounds = cv_lightgbm(train.x, train.y, folds, cfg.lightgbm, cfg.seed)
+    log.info("Selected logistic regression C=%s and %d LightGBM rounds.", c, rounds)
+    ladder = Ladder(
+        majority=Majority.fit(train.y),
+        recency=Recency.fit(train.x, train.y),
+        logreg=LogReg.fit(train.x, train.y, c),
+        logreg_platt=Platt.fit(logreg_oof, train.y),
+        lightgbm=GBM.fit(train.x, train.y, cfg.lightgbm, rounds, cfg.seed),
+        lightgbm_platt=Platt.fit(gbm_oof, train.y),
+    )
+    selection = {
+        "logreg_c": c,
+        "logreg_cv_log_loss": cv_log_loss,
+        "lightgbm_rounds": rounds,
+        "platt": {
+            "logreg": [ladder.logreg_platt.a, ladder.logreg_platt.b],
+            "lightgbm": [ladder.lightgbm_platt.a, ladder.lightgbm_platt.b],
+        },
+    }
+    return ladder, selection
 
 
 def train_and_evaluate(cfg: TrainConfig, data_dir: Path) -> TrainSummary:
@@ -111,18 +140,7 @@ def train_and_evaluate(cfg: TrainConfig, data_dir: Path) -> TrainSummary:
             int(test.y.sum()),
         )
 
-    folds = player_folds(train.player, cfg.cv_folds, cfg.seed)
-    c, logreg_oof, cv_log_loss = select_logreg(train.x, train.y, folds, cfg.logreg_c)
-    gbm_oof, rounds = cv_lightgbm(train.x, train.y, folds, cfg.lightgbm, cfg.seed)
-    log.info("Selected logistic regression C=%s and %d LightGBM rounds.", c, rounds)
-    ladder = Ladder(
-        majority=Majority.fit(train.y),
-        recency=Recency.fit(train.x, train.y),
-        logreg=LogReg.fit(train.x, train.y, c),
-        logreg_platt=Platt.fit(logreg_oof, train.y),
-        lightgbm=GBM.fit(train.x, train.y, cfg.lightgbm, rounds, cfg.seed),
-        lightgbm_platt=Platt.fit(gbm_oof, train.y),
-    )
+    ladder, selection = fit_ladder(train, cfg)
 
     preds = ladder.predict(test.x)
     results, vs_baseline = evaluate(
@@ -133,20 +151,12 @@ def train_and_evaluate(cfg: TrainConfig, data_dir: Path) -> TrainSummary:
 
     metrics: dict[str, Any] = {
         "dataset": cfg.dataset,
-        "examples_sha256": _sha256(source),
+        "examples_sha256": sha256(source),
         "created": datetime.now(UTC).isoformat(timespec="seconds"),
         "lolret_version": __version__,
         "config": cfg.model_dump(),
-        "data": {"train": _describe(train), "test": _describe(test)},
-        "selection": {
-            "logreg_c": c,
-            "logreg_cv_log_loss": cv_log_loss,
-            "lightgbm_rounds": rounds,
-            "platt": {
-                "logreg": [ladder.logreg_platt.a, ladder.logreg_platt.b],
-                "lightgbm": [ladder.lightgbm_platt.a, ladder.lightgbm_platt.b],
-            },
-        },
+        "data": {"train": describe(train), "test": describe(test)},
+        "selection": selection,
         "baseline": BASELINE,
         "test": results,
         "vs_baseline": vs_baseline,

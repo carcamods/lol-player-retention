@@ -60,13 +60,22 @@ class Examples:
         return Examples(self.x[mask], self.y[mask], self.player[mask], self.cutoff[mask])
 
 
-def load_examples(path: Path) -> Examples:
-    """Read `examples.parquet` (from `lolret build`), keeping eligible pairs with a label."""
+UNKNOWN = -1  # label of an example whose label window hasn't happened yet
+
+
+def load_examples(path: Path, *, labelled: bool = True) -> Examples:
+    """Read `examples.parquet` (from `lolret build`), keeping eligible pairs with a label.
+
+    With `labelled=False`, eligible pairs without a label are kept too, with `y = UNKNOWN`:
+    the forward test predicts for them before their outcome exists.
+    """
     columns = ", ".join(f"coalesce({name}::DOUBLE, 'NaN'::DOUBLE) AS {name}" for name in FEATURES)
+    where = "eligible AND churned IS NOT NULL" if labelled else "eligible"
     # Column names come from FEATURES, a constant in this module, not from user input.
     query = (
-        f"SELECT platform || ':' || puuid AS player, cutoff, churned::INT AS y, {columns} "  # noqa: S608
-        "FROM read_parquet(?) WHERE eligible AND churned IS NOT NULL ORDER BY player, cutoff"
+        f"SELECT platform || ':' || puuid AS player, cutoff, "  # noqa: S608
+        f"coalesce(churned::INT, {UNKNOWN}) AS y, {columns} "
+        f"FROM read_parquet(?) WHERE {where} ORDER BY player, cutoff"
     )
     with duckdb.connect() as con:
         cols = con.execute(query, [str(path)]).fetchnumpy()

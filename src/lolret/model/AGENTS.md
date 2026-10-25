@@ -11,12 +11,14 @@ beats the recency rule yet. A test set with fewer than 200 churners marks the mo
 
 - `config.py`: `TrainConfig` from `configs/train.yaml`.
 - `data.py`: `FEATURES` (matrix column order = `features.sql` order), `load_examples` (eligible
-  and labelled rows, NULL to NaN), `in_test_set`, `split_by_player_and_time`.
+  and labelled rows, NULL to NaN; `labelled=False` keeps unlabelled rows with `y = UNKNOWN`),
+  `in_test_set`, `split_by_player_and_time`.
 - `models.py`: `Majority`, `Recency`, `LogReg`, `GBM`, `Platt`, `player_folds`,
   `select_logreg`, `cv_lightgbm`, and `Ladder` (predict, save, load).
 - `evaluate.py`: `scores`, `evaluate` (bootstrap intervals and the paired difference from the
   baseline), `reliability`, `lightgbm_importance`.
-- `train.py`: `train_and_evaluate` writes `data/models/<dataset>/`: `models.json`,
+- `train.py`: `fit_ladder` (selection, calibration and fitting; also used by the forward test)
+  and `train_and_evaluate`, which writes `data/models/<dataset>/`: `models.json`,
   `lightgbm.txt`, `metrics.json`, `model_card.md`.
 - `card.py`: `render_model_card` from the metrics dict.
 

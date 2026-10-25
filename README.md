@@ -5,8 +5,9 @@ Predicts whether a ranked **League of Legends** player will stop playing in the 
 
 > **Status: Phase 4 of 6, models.** The full collection run is done (6,048 players, 11,678
 > eligible examples), the classical models are trained and evaluated, and the exploratory
-> analysis explains the results: see [first results](#first-results). See the
-> [roadmap](docs/requirements.md#roadmap).
+> analysis explains the results: see [first results](#first-results). A
+> [forward test](#forward-test) on outcomes that hadn't happened yet is running until
+> 2026-11-19. See the [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 
@@ -43,6 +44,17 @@ much better than recency does (AUC 0.60 at best inside those groups). In-game st
 win rate and KDA carry almost no signal at all. Four features aimed at that gap (break history,
 the longest previous gap, account level) lifted LightGBM to 0.476, but didn't pass the rule set
 before training, so they were dropped ([ADR 0010](docs/decisions/0010-break-features.md)).
+
+## Forward test
+
+A test set that has been looked at several times is no longer quite fresh, so the models also
+face a forward test ([ADR 0011](docs/decisions/0011-forward-test.md)). The ladder was retrained
+on all of run `v1` and predicted, for each of the 3,718 players who had played in the 4 weeks
+before 2026-10-22, whether they would play in the 4 weeks after it. The predictions were frozen
+on 2026-10-25, before any of those weeks was collected, and the file's SHA-256 is committed in
+[`configs/forward.yaml`](configs/forward.yaml), so they can't be changed after the fact. The
+outcomes are collected after 2026-11-19. The question, set before freezing: does LightGBM beat
+the recency rule on them?
 
 ## Data flow
 
@@ -133,6 +145,19 @@ uv run lolret train -c configs/train.yaml   # -> data/models/v1/{models.json, li
 The test set is 30% of players, held out completely, at the latest cutoff. Every metric comes
 with a 95% bootstrap interval, and the model card says whether each model beats the recency
 rule ("days since the last game"). Design: [ADR 0008](docs/decisions/0008-classical-model-evaluation.md).
+
+**Run the forward test** (needs `RIOT_API_KEY`; design in
+[ADR 0011](docs/decisions/0011-forward-test.md)):
+
+```bash
+uv run lolret forward collect -c configs/forward.yaml            # features at the cutoff (~4-6 h)
+uv run lolret forward predict -c configs/forward.yaml            # freeze; commit the printed hash
+uv run lolret forward collect -c configs/forward.yaml --labels   # after the 28 days (~1.5 h)
+uv run lolret forward score   -c configs/forward.yaml            # -> data/forward/<name>/report.md
+```
+
+Each step refuses to run out of order: no labels before the hash is committed, no predictions
+once labels exist, and no score if a file doesn't match its hash.
 
 **Collect data** (needs `RIOT_API_KEY`):
 

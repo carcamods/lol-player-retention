@@ -70,9 +70,12 @@ else is code or docs, delivered as a PR that Matias reviews.
 Start this as soon as 4a works on the full data (it does since 2026-10-24): it needs 28 days
 of waiting, and launch doesn't wait for it.
 
-- [ ] Predict for every eligible player at a cutoff of "today". Commit the file's SHA-256 so
-      the predictions provably weren't changed after the fact.
-- [ ] 28 days later, collect again (only the new weeks) and score the predictions.
+- [x] Predict for every eligible player at a cutoff of "today". Commit the file's SHA-256 so
+      the predictions provably weren't changed after the fact. Cutoff 2026-10-22, 3,718
+      players, frozen 2026-10-25 (ADR 0011, `configs/forward.yaml`).
+- [ ] Optional: enter the 4b neural nets as later entries, before the labels are collected.
+- [ ] After 2026-11-19 00:00 UTC: `lolret forward collect --labels` (about 1.5 h), then
+      `lolret forward score`. *Run: Matias*
 - [ ] Add the result to the model card and the site.
 
 ## Phase 5: launch
