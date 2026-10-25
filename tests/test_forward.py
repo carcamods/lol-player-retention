@@ -17,6 +17,7 @@ import pytest
 import respx
 import yaml
 from conftest import REPO_ROOT
+from test_candidates import write_candidates
 from test_model import config as train_config
 from test_model import write_examples
 from test_nn import nn_config, write_sequences
@@ -26,6 +27,7 @@ from lolret.cli import app
 from lolret.collect.config import CollectConfig
 from lolret.collect.runner import run_collection
 from lolret.collect.store import Store
+from lolret.forward.candidates import freeze_candidates_entry
 from lolret.forward.collect import (
     LayeredStore,
     base_store_path,
@@ -41,6 +43,7 @@ from lolret.forward.predict import (
     read_entry,
 )
 from lolret.forward.score import REPORT_FILE, score_forward
+from lolret.model.candidates import candidates_path
 from lolret.model.train import examples_path
 from lolret.nn.data import sequences_path
 from lolret.nn.forward import freeze_nn_entry
@@ -396,3 +399,32 @@ def test_nets_enter_after_the_ladder_and_are_scored_against_lightgbm(
     assert "Later entries against LightGBM" in (scored.out_dir / REPORT_FILE).read_text(
         encoding="utf-8"
     )
+
+
+def test_candidates_enter_after_the_ladder_and_are_scored_against_lightgbm(
+    world: tuple[Forward, Path],
+) -> None:
+    fwd, data_dir = world
+    write_candidates(candidates_path(data_dir, "base"), examples_path(data_dir, "base"))
+    run_features(fwd, data_dir, datetime(2026, 10, 25, tzinfo=UTC))
+    ladder = freeze_predictions(fwd, data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
+    with pytest.raises(ForwardError, match="no frozen entries"):  # the hash isn't committed yet
+        freeze_candidates_entry(fwd, data_dir, now=datetime(2026, 10, 25, tzinfo=UTC))
+    fwd = load_forward(write_configs(data_dir.parent, {"ladder": ladder.sha256}))
+
+    cand = freeze_candidates_entry(fwd, data_dir, now=datetime(2026, 10, 26, tzinfo=UTC))
+
+    players, preds = read_entry(cand.entry)
+    assert set(preds) == {"lightgbm_candidates"}
+    assert set(players.tolist()) == set(read_entry(ladder.entry)[0].tolist())
+    with pytest.raises(ForwardError, match="already frozen"):
+        freeze_candidates_entry(fwd, data_dir, now=datetime(2026, 10, 26, tzinfo=UTC))
+
+    fwd = load_forward(
+        write_configs(data_dir.parent, {"ladder": ladder.sha256, "candidates": cand.sha256})
+    )
+    run_labels(fwd, data_dir, LABEL_END)
+    scored = score_forward(fwd, data_dir, now=LABEL_END)
+
+    results = json.loads((scored.out_dir / "results.json").read_text(encoding="utf-8"))
+    assert set(results["vs_lightgbm"]) == {"lightgbm_candidates"}

@@ -8,6 +8,7 @@ model, never pickles (docs/standards.md).
 
 import json
 import warnings
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -184,8 +185,16 @@ class GBM:
     booster: lgb.Booster
 
     @classmethod
-    def fit(cls, x: Matrix, y: Labels, params: LightGBMParams, rounds: int, seed: int) -> "GBM":
-        data = lgb.Dataset(x, y, feature_name=list(FEATURES))
+    def fit(
+        cls,
+        x: Matrix,
+        y: Labels,
+        params: LightGBMParams,
+        rounds: int,
+        seed: int,
+        names: Sequence[str] = FEATURES,
+    ) -> "GBM":
+        data = lgb.Dataset(x, y, feature_name=list(names))
         return cls(lgb.train(lightgbm_params(params, seed), data, num_boost_round=rounds))
 
     def predict(self, x: Matrix) -> Vector:
@@ -193,13 +202,18 @@ class GBM:
 
 
 def cv_lightgbm(
-    x: Matrix, y: Labels, folds: list[Fold], params: LightGBMParams, seed: int
+    x: Matrix,
+    y: Labels,
+    folds: list[Fold],
+    params: LightGBMParams,
+    seed: int,
+    names: Sequence[str] = FEATURES,
 ) -> tuple[Vector, int]:
     """Early-stop on each fold. Returns out-of-fold predictions and the mean best round count."""
     oof = np.empty(len(y))
     rounds: list[int] = []
     for train, val in folds:
-        train_set = lgb.Dataset(x[train], y[train], feature_name=list(FEATURES))
+        train_set = lgb.Dataset(x[train], y[train], feature_name=list(names))
         val_set = lgb.Dataset(x[val], y[val], reference=train_set)
         booster = lgb.train(
             lightgbm_params(params, seed),

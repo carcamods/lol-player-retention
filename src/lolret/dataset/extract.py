@@ -56,6 +56,8 @@ MATCHES_SCHEMA = pa.schema(
         ("team_position", pa.string()),
         ("remake", pa.bool_()),
         ("surrendered", pa.bool_()),
+        ("summoner_level", pa.int32()),
+        ("teammates", pa.list_(pa.string())),  # other puuids on the player's team; stay in data/
     ]
 )
 
@@ -112,6 +114,12 @@ def participant_row(platform: str, puuid: str, match: dict[str, Any]) -> dict[st
         "team_position": player.get("teamPosition") or None,  # empty outside Summoner's Rift
         "remake": bool(player.get("gameEndedInEarlySurrender", False)),
         "surrendered": bool(player.get("gameEndedInSurrender", False)),
+        "summoner_level": player.get("summonerLevel"),
+        "teammates": sorted(
+            p["puuid"]
+            for p in info["participants"]
+            if p.get("teamId") == player.get("teamId") and p.get("puuid") not in (None, puuid)
+        ),
     }
 
 

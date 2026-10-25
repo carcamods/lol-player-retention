@@ -68,6 +68,8 @@ def game(puuid: str, i: int, end: datetime, *, win: bool, **overrides: Any) -> R
         "team_position": "TOP",
         "remake": False,
         "surrendered": False,
+        "summoner_level": 100,
+        "teammates": ["mate-a", "mate-b", "mate-c", "mate-d"],
     }
     return row | overrides
 
@@ -101,6 +103,12 @@ def sequences(
     players: list[Row], buckets: list[Row], matches: list[Row], cutoffs: list[datetime]
 ) -> list[Row]:
     return built(players, buckets, matches, cutoffs, table="sequences")
+
+
+def candidates(
+    players: list[Row], buckets: list[Row], matches: list[Row], cutoffs: list[datetime]
+) -> list[Row]:
+    return built(players, buckets, matches, cutoffs, table="candidates")
 
 
 def test_features_and_label_for_a_hand_built_player() -> None:
@@ -155,6 +163,29 @@ def test_sequence_for_a_hand_built_player() -> None:
     assert (rows[0]["win"], rows[0]["kills"], rows[2]["team_position"]) == (False, 2, "JUNGLE")
 
 
+def test_candidate_features_for_a_hand_built_player() -> None:
+    h = timedelta(hours=1)
+    matches = [
+        game("A", 1, T - 2 * h, win=False, summoner_level=101, teammates=["x", "y"]),
+        game("A", 2, T - 3 * h, win=False, summoner_level=101, teammates=["x", "z"]),
+        game("A", 3, T - 24 * h, win=True, summoner_level=100, teammates=["x", "y"]),
+        # Still running at T: its level and teammates are not known yet.
+        game(
+            "A", 4, T + timedelta(minutes=20), win=True, summoner_level=102, teammates=["q", "q2"]
+        ),
+    ]
+    # Played in weeks -8 and -7, nothing in -6 and -5, back in -4, off in -3, back in -1.
+    buckets = weeks("A", {-8: 2, -7: 1, -4: 3, -1: 3})
+
+    [a] = candidates([player("A")], buckets, matches, [T])
+
+    assert a["returns_8w"] == 2
+    assert a["longest_gap_days"] == pytest.approx(20.5 / 24)  # game 3 end to game 2 start
+    assert a["break_vs_longest_gap"] == pytest.approx((2 / 24) / (20.5 / 24))
+    assert a["summoner_level"] == 101
+    assert a["repeated_teammates"] == 2  # x in three games, y in two, z in one
+
+
 def test_a_player_with_no_games_is_ineligible_with_empty_features() -> None:
     [b] = examples([player("B")], weeks("B", {}), [], [T])
 
@@ -194,6 +225,8 @@ def random_world(seed: int) -> tuple[list[Row], list[Row], list[Row]]:
                     champion_id=rng.randint(1, 8),
                     queue_id=rng.choice([420, 440, 450, 400]),
                     team_position=rng.choice(["TOP", "MIDDLE", None]),
+                    summoner_level=30 + (end - (T - 12 * WEEK)).days // 5,  # rises over time
+                    teammates=rng.sample(["m1", "m2", "m3", "m4", "m5", "m6", "m7"], 4),
                 )
             )
     return players, buckets, matches
@@ -241,6 +274,25 @@ def test_leak_guard_sequences_only_see_data_before_the_cutoff(seed: int) -> None
             [cutoff],
         )
         assert len(full) == len(truncated)
+        for row_full, row_truncated in zip(full, truncated, strict=True):
+            for column, value in row_full.items():
+                assert same(value, row_truncated[column]), (cutoff, row_full["puuid"], column)
+
+
+@pytest.mark.parametrize("seed", range(5))
+def test_leak_guard_candidates_only_see_data_before_the_cutoff(seed: int) -> None:
+    """The same guard for the candidate features (ADR 0013)."""
+    players, buckets, matches = random_world(seed)
+
+    for cutoff in [T - 8 * WEEK, T - 4 * WEEK, T]:
+        full = candidates(players, buckets, matches, [cutoff])
+        truncated = candidates(
+            players,
+            [b for b in buckets if b["bucket_end"] <= cutoff],
+            [m for m in matches if m["game_end"] <= cutoff],
+            [cutoff],
+        )
+        assert len(full) == len(truncated) == len(players)
         for row_full, row_truncated in zip(full, truncated, strict=True):
             for column, value in row_full.items():
                 assert same(value, row_truncated[column]), (cutoff, row_full["puuid"], column)
