@@ -30,3 +30,4 @@ one (see `src/lolret/dataset/AGENTS.md`).
 | Collection | `test_collect_config.py`, `test_store.py`, `test_history.py`, `test_collect_run.py`, `test_notify.py` |
 | Dataset | `test_dataset.py`, `test_fixtures.py` |
 | Models | `test_model.py` |
+| Forward test | `test_forward.py` |

@@ -7,8 +7,10 @@ is logged and retried on the next run. A rejected key stops everything.
 
 import asyncio
 import time
+from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from lolret.collect.cache import CachedRiot
 from lolret.collect.config import CollectConfig
@@ -39,6 +41,10 @@ class RunResult:
     @property
     def failed(self) -> int:
         return sum(p.failed for p in self.platforms)
+
+
+# Fetches everything one player needs: (riot, platform, puuid).
+CollectOne = Callable[[CachedRiot, str, str], Awaitable[None]]
 
 
 def format_duration(seconds: float) -> str:
@@ -73,13 +79,31 @@ async def collect_platform(
             if added:
                 log.info("[%s] sampled %d players from %s %s", platform, added, tier, division)
 
+    async def one(riot: CachedRiot, platform: str, puuid: str) -> None:
+        await collect_player(riot, cfg, platform, puuid)
+
+    return await collect_players(
+        riot, store, platform, one, failed=failed, progress_every=progress_every
+    )
+
+
+async def collect_players(
+    riot: CachedRiot,
+    store: Store,
+    platform: str,
+    collect_one: CollectOne,
+    *,
+    failed: int = 0,
+    progress_every: int = 25,
+) -> PlatformResult:
+    """Run `collect_one` for every player of the platform not yet marked complete."""
     players = store.players(platform)
     todo = [p for p in players if not p.complete]
     log.info("[%s] %d players sampled, %d still to collect", platform, len(players), len(todo))
     started = time.monotonic()
     for i, player in enumerate(todo, 1):
         try:
-            await collect_player(riot, cfg, platform, player.puuid)
+            await collect_one(riot, platform, player.puuid)
         except RiotRequestError as exc:
             failed += 1
             log.error("[%s] player %d/%d failed, retried next run: %s", platform, i, len(todo), exc)
@@ -101,26 +125,34 @@ async def collect_platform(
     return PlatformResult(platform, len(players), complete, failed)
 
 
-async def run_collection(
-    cfg: CollectConfig, store: Store, client: RiotClient, *, now: datetime
-) -> RunResult:
-    cfg.require_complete_label_windows(now)
-    riot = CachedRiot(client, store)
-    started = time.monotonic()
+async def per_platform(
+    platforms: list[str], work: Callable[[str], Coroutine[Any, Any, PlatformResult]]
+) -> list[PlatformResult]:
+    """Run `work` for every platform concurrently. A rejected key surfaces as itself."""
     try:
         async with asyncio.TaskGroup() as group:
-            tasks = [
-                group.create_task(collect_platform(riot, store, cfg, platform))
-                for platform in cfg.platforms
-            ]
+            tasks = [group.create_task(work(platform)) for platform in platforms]
     except BaseExceptionGroup as errors:
         # Surface a rejected key as itself rather than wrapped in a group.
         auth = [e for e in errors.exceptions if isinstance(e, RiotAuthError)]
         if auth:
             raise auth[0] from None
         raise
+    return [t.result() for t in tasks]
+
+
+async def run_collection(
+    cfg: CollectConfig, store: Store, client: RiotClient, *, now: datetime
+) -> RunResult:
+    cfg.require_complete_label_windows(now)
+    riot = CachedRiot(client, store)
+    started = time.monotonic()
+
+    async def work(platform: str) -> PlatformResult:
+        return await collect_platform(riot, store, cfg, platform)
+
     return RunResult(
-        platforms=[t.result() for t in tasks],
+        platforms=await per_platform(cfg.platforms, work),
         requests=riot.misses,
         cache_hits=riot.hits,
         seconds=time.monotonic() - started,

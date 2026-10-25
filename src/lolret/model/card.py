@@ -18,7 +18,7 @@ def _num(value: float | None, digits: int = 3) -> str:
     return "n/a" if value is None else f"{value:.{digits}f}"
 
 
-def _with_ci(value: float | None, ci: list[float] | None) -> str:
+def with_ci(value: float | None, ci: list[float] | None) -> str:
     if value is None:
         return "n/a"
     return _num(value) if ci is None else f"{_num(value)} ({_num(ci[0])}, {_num(ci[1])})"
@@ -28,9 +28,9 @@ def _signed(value: float) -> str:
     return f"{value:+.3f}"
 
 
-def _verdict(name: str, comparison: dict[str, Any], baseline: str) -> str:
+def verdict(name: str, comparison: dict[str, Any], baseline: str) -> str:
     diff, ci = comparison["pr_auc_diff"], comparison["pr_auc_diff_ci"]
-    model, base = LABELS[name], LABELS[baseline].lower()
+    model, base = LABELS.get(name, name), LABELS[baseline].lower()
     if ci is None:
         return f"- {model}: PR-AUC difference {_signed(diff)} (no interval)."
     span = f"{_signed(ci[0])} to {_signed(ci[1])}"
@@ -85,8 +85,8 @@ def render_model_card(m: dict[str, Any]) -> str:
     ]
     for name, r in m["test"].items():
         lines.append(
-            f"| {LABELS[name]} | {_with_ci(r['pr_auc'], r['pr_auc_ci'])} | "
-            f"{_with_ci(r['roc_auc'], r['roc_auc_ci'])} | {_with_ci(r['brier'], r['brier_ci'])} |"
+            f"| {LABELS[name]} | {with_ci(r['pr_auc'], r['pr_auc_ci'])} | "
+            f"{with_ci(r['roc_auc'], r['roc_auc_ci'])} | {with_ci(r['brier'], r['brier_ci'])} |"
         )
     lines += [
         "",
@@ -96,11 +96,7 @@ def render_model_card(m: dict[str, Any]) -> str:
         f"**Against the {LABELS[baseline].lower()}** (days since the last game), "
         "paired on the same resamples:",
         "",
-        *(
-            _verdict(name, c, baseline)
-            for name, c in m["vs_baseline"].items()
-            if name != "majority"
-        ),
+        *(verdict(name, c, baseline) for name, c in m["vs_baseline"].items() if name != "majority"),
         "",
         "## Calibration (LightGBM)",
         "",

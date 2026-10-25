@@ -115,7 +115,7 @@ def participant_row(platform: str, puuid: str, match: dict[str, Any]) -> dict[st
     }
 
 
-async def _extract(store: Store, cfg: CollectConfig) -> Tables:
+async def _extract(store: Store, cfg: CollectConfig, until: datetime | None) -> Tables:
     reader = StoredOnly(store)
     players: list[dict[str, Any]] = []
     buckets: list[dict[str, Any]] = []
@@ -134,6 +134,8 @@ async def _extract(store: Store, cfg: CollectConfig) -> Tables:
                 }
             )
             for start, end in cfg.buckets:
+                if until is not None and end > until:
+                    continue  # not collected yet (a forward test before its label window)
                 ids = await bucket_match_ids(reader, region, player.puuid, (start, end))
                 buckets.append(
                     {
@@ -162,5 +164,6 @@ async def _extract(store: Store, cfg: CollectConfig) -> Tables:
     )
 
 
-def extract(store: Store, cfg: CollectConfig) -> Tables:
-    return asyncio.run(_extract(store, cfg))
+def extract(store: Store, cfg: CollectConfig, *, until: datetime | None = None) -> Tables:
+    """Tables for the run's complete players. With `until`, only buckets ending by then."""
+    return asyncio.run(_extract(store, cfg, until))

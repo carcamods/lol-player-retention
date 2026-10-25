@@ -4,8 +4,8 @@ Samples ranked players from the ladder, then fetches each player's match IDs per
 and details for the most recent matches before each cutoff. Everything is cached in one SQLite
 file per run, so a run can stop and resume without repeating a request.
 
-**Status:** done (Phase 2). Run `v1` (`configs/collect.yaml`) is in progress on the owner's
-machine. Pilot results and the full-run estimate are in ADR 0005.
+**Status:** done (Phase 2). Run `v1` (`configs/collect.yaml`) finished 2026-10-24. The forward
+test (`src/lolret/forward/`) reuses its store read-only. Pilot results and the full-run estimate are in ADR 0005.
 
 ## Files
 
@@ -17,7 +17,8 @@ machine. Pilot results and the full-run estimate are in ADR 0005.
 - `cache.py`: `cache_key` and `CachedRiot`, which answers from the store first.
 - `store.py`: SQLite schema (responses, failures, players), zlib-compressed bodies,
   `decode_body` (also reads older plain-text bodies), and read-only mode for `status`.
-- `runner.py`: platforms concurrently, players sequentially; progress logs; `RunResult`.
+- `runner.py`: platforms concurrently (`per_platform`), players sequentially
+  (`collect_players`, also used by the forward test); progress logs; `RunResult`.
 
 ## Rules that must not break
 

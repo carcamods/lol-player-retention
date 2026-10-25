@@ -22,10 +22,12 @@ changing code in that folder. Read what the task needs, not the whole repo.
   carry almost no signal anywhere.
 - **Feature round (ADR 0010):** four break features lifted LightGBM to PR-AUC 0.476 but
   failed the rule set before training, so they were removed (code kept in commit `40b421a`).
-- **Next:** start the 4c forward test, which needs 28 days of waiting, then 4b neural nets
-  while it runs.
-- **Later:** 4b neural nets on Colab (same split and `evaluate()` as 4a), 4c forward test,
-  5 site and launch. See the roadmap.
+- **Forward test (ADR 0011):** started 2026-10-25 at cutoff 2026-10-22. Predictions for the
+  3,718 eligible players are frozen and their SHA-256 is committed in `configs/forward.yaml`.
+  After 2026-11-19 the owner runs `lolret forward collect --labels`, then `lolret forward score`.
+- **Next:** 4b neural nets (same split and `evaluate()` as 4a), entered in the forward test
+  before its labels are collected if they're ready.
+- **Later:** score the forward test, 5 site and launch. See the roadmap.
 
 ## Where things live (read on demand)
 
@@ -37,7 +39,7 @@ changing code in that folder. Read what the task needs, not the whole repo.
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
 | Feature and label definitions | `docs/features.md` |
 | Engineering standards, before structural changes | `docs/standards.md` |
-| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `notebooks/`, `tests/`, `docs/` |
+| A module's purpose, rules and tests | its `AGENTS.md`: `src/lolret/riot/`, `src/lolret/collect/`, `src/lolret/dataset/`, `src/lolret/model/`, `src/lolret/forward/`, `notebooks/`, `tests/`, `docs/` |
 
 ## Commands
 
@@ -50,6 +52,7 @@ uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
 uv run lolret status -c configs/collect.yaml
 uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
+uv run lolret forward collect|predict|score -c configs/forward.yaml   # forward test, ADR 0011
 ```
 
 ## Rules that always apply

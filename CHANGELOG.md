@@ -2,6 +2,22 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] Forward test started
+
+### Added
+- ADR 0011 and `lolret forward collect | predict | score`: predictions at the 2026-10-22 cutoff
+  for the 3,718 eligible `v1` players, from the ladder retrained on every labelled `v1`
+  example, frozen by a SHA-256 committed in `configs/forward.yaml`. Each step checks the one
+  before it, so labels can't be collected before the hash is committed and predictions can't
+  be redone once labels exist. Scored after 2026-11-19.
+- `tests/test_forward.py`: the whole sequence against a fake Riot API, plus every refusal.
+
+### Changed
+- The collector's per-player loop and per-platform runner are reusable helpers
+  (`collect_players`, `per_platform`), `extract` takes an `until` horizon, `load_examples` can
+  keep unlabelled rows, and `fit_ladder` is shared by `lolret train` and the forward test.
+  Behaviour of `collect`, `build` and `train` is unchanged.
+
 ## [2026-10-24] Break features tried and dropped
 
 ### Added

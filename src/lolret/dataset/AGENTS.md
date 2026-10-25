@@ -10,6 +10,7 @@ explored in `notebooks/eda.ipynb`.
 
 - `extract.py`: `StoredOnly` (a `RiotEndpoints` that reads the store, so keys match collection
   exactly), `participant_row`, and the `players`, `buckets` and `matches` tables (naive UTC).
+  `until` skips buckets that end later (the forward test, before its labels exist).
 - `features.sql`: every feature and the label, in one DuckDB query. **The definitions live
   here**, documented column by column in `docs/features.md`.
 - `build.py`: `build_examples` (tables → `examples` in a DuckDB connection) and

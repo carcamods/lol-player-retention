@@ -1,0 +1,15 @@
+# Forward test (Phase 4c). Design: docs/decisions/0011-forward-test.md
+#
+# 1. uv run lolret forward collect -c configs/forward.yaml            features at the cutoff
+# 2. uv run lolret forward predict -c configs/forward.yaml            freeze; commit the hash below
+# 3. after the label window ends (2026-11-19 00:00 UTC):
+#    uv run lolret forward collect -c configs/forward.yaml --labels   the outcomes
+# 4. uv run lolret forward score -c configs/forward.yaml              data/forward/<name>/report.md
+name: forward-2026-10-22
+base_run: configs/collect.yaml  # run v1: its players, cached responses and training examples
+train: configs/train.yaml       # model settings, as in Phase 4a
+cutoff: 2026-10-22              # v1's last label window ends here; on its weekly bucket grid
+
+# Frozen predictions: the SHA-256 that step 2 prints, committed before step 3.
+entries:
+  ladder: dccb1bef0385d95d2c7cd8e918a0f1f80cbb1ba698036f2bcc07474feae27440  # 2026-10-25 07:06 UTC
