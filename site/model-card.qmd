@@ -61,6 +61,36 @@ html`<ul>${Object.entries(snapshot.vs_recency).map(([k, c]) => {
 })}</ul>`
 ```
 
+## By region and tier
+
+Does it work as well everywhere? Each group has only 15 to 75 players who stopped, so read
+these for large gaps, not small ones. Tier is recorded when players were sampled and is never a
+feature.
+
+```{ojs}
+//| echo: false
+groupRows = {
+  const g = snapshot.by_group ?? {}
+  const regions = {na1: "NA", euw1: "EUW", kr: "KR"}
+  const tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"]
+  return [
+    ...Object.keys(g.region ?? {}).sort().map((k) => ({group: regions[k] ?? k, ...g.region[k]})),
+    ...tiers.filter((t) => g.tier?.[t]).map((t) => ({group: t.charAt(0) + t.slice(1).toLowerCase(), ...g.tier[t]}))
+  ]
+}
+num = (v) => v === null || v === undefined ? "n/a" : v.toFixed(3)
+html`<table class="table table-sm">
+  <thead><tr><th>Group</th><th>Players</th><th>Stopped</th><th>PR-AUC LightGBM</th>
+    <th>PR-AUC recency</th><th>ROC-AUC LightGBM</th></tr></thead>
+  <tbody>${groupRows.map((r) => html`<tr><td>${r.group}</td><td>${r.examples}</td>
+    <td>${(100 * r.churned / r.examples).toFixed(0)}%</td><td>${num(r.lightgbm.pr_auc)}</td>
+    <td>${num(r.recency.pr_auc)}</td><td>${num(r.lightgbm.roc_auc)}</td></tr>`)}</tbody>
+</table>`
+```
+
+<p class="small-note">PR-AUC depends on how many players in the group stop, so compare
+LightGBM with the recency rule within a row, not across rows.</p>
+
 ## Are the probabilities right?
 
 When LightGBM says 30%, about 30% of those players should stop. The chart groups the test

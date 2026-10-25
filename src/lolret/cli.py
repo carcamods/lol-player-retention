@@ -486,7 +486,13 @@ def predict(
 
 
 @app.command()
-def export(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
+def export(
+    config: TrainConfigOption = DEFAULT_TRAIN_CONFIG,
+    forward: Annotated[
+        Path | None,
+        typer.Option("--forward", help="Forward-test config, for its status or results."),
+    ] = DEFAULT_FORWARD_CONFIG,
+) -> None:
     """Export the anonymised snapshot of held-out players for the public site.
 
     Writes data/snapshot/<dataset>/snapshot.json: numbered players, no PUUID or Riot ID.
@@ -495,9 +501,10 @@ def export(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
     from lolret.export.snapshot import export_snapshot
 
     settings = get_settings()
+    fwd = _load_forward(forward) if forward is not None and forward.exists() else None
     try:
         summary = export_snapshot(
-            load_train_config(config), settings.data_dir, now=datetime.now(UTC)
+            load_train_config(config), settings.data_dir, now=datetime.now(UTC), forward=fwd
         )
     except FileNotFoundError as exc:
         log.error("%s", exc)

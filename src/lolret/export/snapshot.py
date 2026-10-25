@@ -22,6 +22,9 @@ from typing import Any
 import duckdb
 import numpy as np
 
+from lolret.forward.config import Forward
+from lolret.forward.predict import MANIFEST_FILE, forward_dir
+from lolret.forward.score import RESULTS_FILE
 from lolret.model.config import TrainConfig
 from lolret.model.data import FEATURES, load_examples, split_by_player_and_time
 from lolret.model.models import Ladder
@@ -68,8 +71,49 @@ class ExportSummary:
     churned: int
 
 
+def forward_summary(fwd: Forward, data_dir: Path) -> dict[str, Any]:
+    """The forward test for the site: pending with its dates and hashes, or scored with results.
+
+    Only aggregates and hashes: the entry files themselves (with PUUIDs) never leave `data/`.
+    """
+    out_dir = forward_dir(data_dir, fwd)
+    summary: dict[str, Any] = {
+        "cutoff": f"{fwd.cutoff:%Y-%m-%d}",
+        "outcomes_until": f"{fwd.label_window_end:%Y-%m-%d}",
+        "entries": dict(fwd.cfg.entries),
+        "status": "not started",
+    }
+    if (out_dir / MANIFEST_FILE).exists():
+        manifest = json.loads((out_dir / MANIFEST_FILE).read_text(encoding="utf-8"))
+        summary |= {
+            "status": "pending",
+            "frozen_at": manifest["frozen_at"][:10],
+            "players": manifest["forward_examples"]["eligible"],
+        }
+    if (out_dir / RESULTS_FILE).exists():
+        results = json.loads((out_dir / RESULTS_FILE).read_text(encoding="utf-8"))
+        summary |= {
+            "status": "scored",
+            "scored_at": results["scored_at"][:10],
+            "players": results["players"],
+            "churned": results["churned"],
+            "metrics": {
+                name: {k: r[k] for k in ("pr_auc", "pr_auc_ci", "roc_auc", "brier")}
+                for name, r in results["results"].items()
+            },
+            "vs_recency": results["vs_baseline"],
+            "vs_lightgbm": results.get("vs_lightgbm", {}),
+        }
+    return summary
+
+
 def export_snapshot(
-    cfg: TrainConfig, data_dir: Path, *, now: datetime, salt: bytes | None = None
+    cfg: TrainConfig,
+    data_dir: Path,
+    *,
+    now: datetime,
+    salt: bytes | None = None,
+    forward: Forward | None = None,
 ) -> ExportSummary:
     model_dir = models_dir(data_dir, cfg.dataset)
     if not (model_dir / METRICS_FILE).exists():
@@ -151,6 +195,8 @@ def export_snapshot(
             if name in metrics.get("vs_baseline", {}) and name != "majority"
         },
         "train": {k: metrics["data"]["train"][k] for k in ("examples", "players", "churn_rate")},
+        "by_group": metrics.get("by_group", {}),
+        "forward": None if forward is None else forward_summary(forward, data_dir),
         "players": players,
     }
     path = snapshot_path(data_dir, cfg.dataset)

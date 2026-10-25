@@ -1,5 +1,6 @@
 """Model tests: loading and splitting, each model, calibration, evaluation, and `lolret train`."""
 
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -289,3 +290,17 @@ def test_cli_train_writes_the_model_card(
 
     assert result.exit_code == 0, result.output
     assert (data_dir / "models" / "synthetic" / CARD_FILE).exists()
+
+
+def test_metrics_and_card_break_results_down_by_region_and_tier(data_dir: Path) -> None:
+    train_and_evaluate(config(), data_dir)
+    out = data_dir / "models" / "synthetic"
+
+    groups = json.loads((out / METRICS_FILE).read_text(encoding="utf-8"))["by_group"]
+
+    assert set(groups["region"]) == {"na1", "euw1", "kr"}
+    assert set(groups["tier"]) == {"GOLD"}
+    test_rows = sum(g["examples"] for g in groups["region"].values())
+    assert test_rows == groups["tier"]["GOLD"]["examples"]
+    assert {"recency", "lightgbm"} <= set(groups["region"]["kr"])
+    assert "## By region and tier" in (out / CARD_FILE).read_text(encoding="utf-8")

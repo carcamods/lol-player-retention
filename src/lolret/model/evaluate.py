@@ -83,6 +83,26 @@ def evaluate(
     return results, comparison
 
 
+def by_group(
+    y: Labels, preds: dict[str, Vector], groups: dict[str, np.ndarray], models: tuple[str, ...]
+) -> dict[str, dict[str, dict[str, Any]]]:
+    """Size, churn and each model's scores within every group of every grouping.
+
+    Reporting only: groups are small, so these are rough, and nothing is chosen from them.
+    """
+    out: dict[str, dict[str, dict[str, Any]]] = {}
+    for grouping, labels in groups.items():
+        out[grouping] = {}
+        for group in sorted(set(labels.tolist())):
+            mask = labels == group
+            out[grouping][str(group)] = {
+                "examples": int(mask.sum()),
+                "churned": int(y[mask].sum()),
+                **{name: scores(y[mask], preds[name][mask]) for name in models},
+            }
+    return out
+
+
 def reliability(y: Labels, p: Vector, bins: int = 10) -> list[dict[str, float]]:
     """Equal-count bins by predicted probability: mean prediction vs observed churn rate."""
     order = np.argsort(p, kind="stable")

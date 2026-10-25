@@ -47,6 +47,36 @@ def verdict(name: str, comparison: dict[str, Any], baseline: str) -> str:
     )
 
 
+TIERS = ("IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND")
+REGIONS = {"na1": "NA", "euw1": "EUW", "kr": "KR"}
+
+
+def _by_group(m: dict[str, Any]) -> list[str]:
+    """Performance by region and tier; empty for metrics written before it existed."""
+    if "by_group" not in m:
+        return []
+    lines = [
+        "## By region and tier",
+        "",
+        "Test examples split by region and by tier (tier is collected at sampling time and is "
+        "never a feature). Each group has only 15 to 75 churners, so these are rough: read them "
+        "for large gaps, not small ones.",
+        "",
+        "| Group | Examples | Churn | PR-AUC LightGBM | PR-AUC recency | ROC-AUC LightGBM |",
+        "|---|---|---|---|---|---|",
+    ]
+    groups = m["by_group"]
+    rows = [(REGIONS.get(g, g), groups["region"][g]) for g in sorted(groups.get("region", {}))]
+    rows += [(t.title(), groups["tier"][t]) for t in TIERS if t in groups.get("tier", {})]
+    for label, g in rows:
+        lines.append(
+            f"| {label} | {g['examples']} | {g['churned'] / g['examples']:.1%} | "
+            f"{_num(g['lightgbm']['pr_auc'])} | {_num(g['recency']['pr_auc'])} | "
+            f"{_num(g['lightgbm']['roc_auc'])} |"
+        )
+    return [*lines, ""]
+
+
 def _against_lightgbm(name: str, comparison: dict[str, Any]) -> str:
     diff, ci = comparison["pr_auc_diff"], comparison["pr_auc_diff_ci"]
     model = LABELS.get(name, name)
@@ -142,6 +172,7 @@ def render_model_card(m: dict[str, Any]) -> str:
         "",
         *(verdict(name, c, baseline) for name, c in m["vs_baseline"].items() if name != "majority"),
         "",
+        *_by_group(m),
         "## Calibration (LightGBM)",
         "",
         "Test examples in equal-count bins by predicted probability.",

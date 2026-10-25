@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import duckdb
 import numpy as np
 
 from lolret import __version__
@@ -23,7 +24,7 @@ from lolret.log import get_logger
 from lolret.model.card import render_model_card
 from lolret.model.config import TrainConfig
 from lolret.model.data import Examples, load_examples, split_by_player_and_time
-from lolret.model.evaluate import brier, evaluate, lightgbm_importance, reliability
+from lolret.model.evaluate import brier, by_group, evaluate, lightgbm_importance, reliability
 from lolret.model.models import (
     GBM,
     Ladder,
@@ -123,6 +124,22 @@ def fit_ladder(train: Examples, cfg: TrainConfig) -> tuple[Ladder, dict[str, Any
     return ladder, selection
 
 
+def test_groups(source: Path, test: Examples) -> dict[str, np.ndarray]:
+    """Region and tier of every test example (tier is metadata, never a feature)."""
+    latest = test.cutoff.max().item()
+    with duckdb.connect() as con:
+        tier = dict(
+            con.execute(
+                "SELECT platform || ':' || puuid, tier FROM read_parquet(?) WHERE cutoff = ?",
+                [str(source), latest],
+            ).fetchall()
+        )
+    return {
+        "region": np.array([p.split(":", 1)[0] for p in test.player.tolist()]),
+        "tier": np.array([tier[p] for p in test.player.tolist()]),
+    }
+
+
 def train_and_evaluate(cfg: TrainConfig, data_dir: Path) -> TrainSummary:
     source = examples_path(data_dir, cfg.dataset)
     train, test = split_by_player_and_time(load_examples(source), cfg.test_fraction, cfg.seed)
@@ -161,6 +178,7 @@ def train_and_evaluate(cfg: TrainConfig, data_dir: Path) -> TrainSummary:
         "test": results,
         "vs_baseline": vs_baseline,
         "reliability": {name: reliability(test.y, p) for name, p in preds.items()},
+        "by_group": by_group(test.y, preds, test_groups(source, test), ("recency", "lightgbm")),
         "importance": {
             "lightgbm_mean_abs_shap": lightgbm_importance(ladder.lightgbm.booster, test.x),
             "logreg_coef": dict(

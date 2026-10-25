@@ -2,6 +2,20 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-25] The site shows the forward test
+
+### Added
+- `lolret export --forward configs/forward.yaml` (the default) adds the forward test to the
+  snapshot: pending with its dates and frozen hashes, then, once scored, its aggregate results.
+  The site's Overview shows whichever it is, so the November result needs only a re-export.
+
+## [2026-10-25] Results by region and tier
+
+### Added
+- `metrics.json`, the model card and the site's model card page break the test results down by
+  region and by tier (PR-AUC of LightGBM and the recency rule, ROC-AUC, churn). Reporting only:
+  each group has 15 to 75 churners, and nothing is chosen from these numbers.
+
 ## [2026-10-25] README in 30 seconds
 
 ### Changed
