@@ -4,9 +4,10 @@ A static site: Overview, Explorer, Model card, Developers. Every number and char
 `data/snapshot.json`, the file `lolret export` writes (ADR 0014). It makes no API calls
 (ADR 0002).
 
-**Status:** built and checked locally (2026-10-25), not deployed. The snapshot is committed:
-the owner chose to publish the weekly timeline as is (ADR 0014). Deploying is the owner's call:
-`pages.yml` runs only by hand.
+**Status:** live at https://carcamods.github.io/lol-player-retention/ since 2026-10-26, on the
+committed v1 snapshot (the owner chose to publish the weekly timeline as is, ADR 0014).
+Deploying is the owner's call: `pages.yml` runs only by hand, so a new snapshot shows only after
+it is merged and the workflow is run again.
 
 ## Files
 

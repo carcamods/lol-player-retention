@@ -2,6 +2,19 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-26] The site is live
+
+### Added
+- The site's link in the README: the top, the 30-second summary and "The site". It is live at
+  carcamods.github.io/lol-player-retention, deployed by hand with `pages.yml` from the
+  committed v1 snapshot.
+
+### Changed
+- The repo is public. A ruleset on `main` requires a PR and the three CI checks (both Python
+  versions and the gitleaks scan) to merge, blocks force pushes and deletions, and has no
+  bypass. It needs no approval, since GitHub doesn't let an owner approve their own PR.
+- Milestone M1 (go public) is done; the checklist and roadmap are ticked.
+
 ## [2026-10-26] Bronze expansion
 
 ### Added

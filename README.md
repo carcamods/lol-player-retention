@@ -3,6 +3,8 @@
 Predicts whether a ranked **League of Legends** player will stop playing in the next
 **28 days**, using only what was knowable at prediction time.
 
+**Site:** [carcamods.github.io/lol-player-retention](https://carcamods.github.io/lol-player-retention/)
+
 ## In 30 seconds
 
 - **The leak.** My 2024 bootcamp version of this project reported 91% accuracy. It was fake:
@@ -18,13 +20,13 @@ Predicts whether a ranked **League of Legends** player will stop playing in the 
   down before the test.
 - **The proof.** Predictions for 3,718 players were frozen by a committed SHA-256 before their
   outcomes happened; they are scored after 2026-11-19.
-- **Try it.** `lolret predict --riot-id Name#TAG` predicts for any player with your own key; a
-  static site with an explorer of held-out players is ready to publish ([`site/`](site/)).
+- **Try it.** `lolret predict --riot-id Name#TAG` predicts for any player with your own key; the
+  [site](https://carcamods.github.io/lol-player-retention/) has an explorer of held-out players.
 
-> **Status: Phase 5 of 6, launch.** Models, forward test, live prediction, snapshot export and
-> the site are built, and the anonymised snapshot is committed
-> ([ADR 0014](docs/decisions/0014-snapshot-export.md)); the site goes live with the repo. See the
-> [roadmap](docs/requirements.md#roadmap).
+> **Status: Phase 5 of 6, launch.** Models, forward test, live prediction and snapshot export
+> are built, and the site is live on the anonymised snapshot
+> ([ADR 0014](docs/decisions/0014-snapshot-export.md)). The forward test is scored after
+> 2026-11-19. See the [roadmap](docs/requirements.md#roadmap).
 
 ## What it does
 
@@ -84,12 +86,13 @@ collected, ask whether the neural nets or five candidate features beat LightGBM.
 
 ## The site
 
-A static [Quarto](https://quarto.org) site in [`site/`](site/) shows the snapshot: an overview of
-the results, an explorer with every held-out player's prediction next to what actually
-happened, the model card and a developer page. It reads only the anonymised snapshot from
-`lolret export` and makes no API calls. The snapshot is committed in `site/data/` (what it
-shows and why: [ADR 0014](docs/decisions/0014-snapshot-export.md)); the site isn't deployed
-yet.
+A static [Quarto](https://quarto.org) site in [`site/`](site/), live at
+[carcamods.github.io/lol-player-retention](https://carcamods.github.io/lol-player-retention/),
+shows the snapshot: an overview of the results, an explorer with every held-out player's
+prediction next to what actually happened, the model card and a developer page. It reads only
+the anonymised snapshot from `lolret export` and makes no API calls. The snapshot is committed
+in `site/data/` (what it shows and why: [ADR 0014](docs/decisions/0014-snapshot-export.md)), and
+the "Deploy site" workflow (`pages.yml`) publishes it, run by hand from the Actions tab.
 
 ```bash
 quarto preview site                                          # on the committed snapshot
