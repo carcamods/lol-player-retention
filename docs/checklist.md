@@ -85,6 +85,18 @@ of waiting, and launch doesn't wait for it.
 - [ ] Add the result to the model card and the site: `lolret export`, copy the snapshot into
       `site/data/`, commit.
 
+## Bronze expansion (ADR 0015)
+
+- [x] Rule written before collecting: Bronze-only model against the general one, then against
+      the recency rule, on fresh Bronze test players.
+- [x] `base_run`, so a run reads an earlier run's store without writing it; checked offline
+      that the Bronze sample starts with v1's 72 players in all 12 divisions.
+- [ ] Collect `configs/collect-bronze.yaml`: 4,704 new players, about 25 h.
+- [ ] `lolret build -c configs/collect-bronze.yaml`, then judge the rule and record the result
+      in ADR 0015.
+- [ ] Apply for a production key with `docs/riot-production-key.md`, once the site is live.
+      *Matias*
+
 ## Phase 5: launch
 
 - [x] Snapshot export: salted-hash IDs, JSON for the site, per-player top drivers (FR4,

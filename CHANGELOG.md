@@ -2,6 +2,22 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-26] Bronze expansion
+
+### Added
+- `configs/collect-bronze.yaml` (run `bronze`, ADR 0015): Bronze only, 464 players per division
+  instead of 72, on the 3 platforms. It tests whether a Bronze-only model wins once it has
+  enough data, by a rule written before collecting.
+- `base_run` in a collection config: the run also reads an earlier run's store and never
+  writes it, so v1's 864 Bronze players and every ladder page come from its cache and only the
+  4,704 new players are requested.
+- `docs/riot-production-key.md`: a draft production-key application, the approved way to
+  collect faster.
+
+### Changed
+- `LayeredStore` moved from `lolret.forward.collect` to `lolret.collect.store`, shared by
+  collection runs and the forward test.
+
 ## [2026-10-25] The snapshot is committed for the site
 
 ### Added

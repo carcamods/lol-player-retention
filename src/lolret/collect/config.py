@@ -4,6 +4,10 @@ Time is cut into fixed buckets (7 days by default) from the start of the earlies
 lookback to the end of the latest cutoff's label window. Cutoffs, lookback, spacing and
 label window are all whole numbers of buckets, so every feature and label window is a union
 of buckets. See docs/decisions/0005-collection-design.md.
+
+`base_run` names an earlier run whose store is read but never written: with the same seed,
+dates and ladder pages, its players and responses come from its cache, so raising
+`players_per_division` in a new run only requests the new players (ADR 0015).
 """
 
 from datetime import UTC, date, datetime, time, timedelta
@@ -24,6 +28,7 @@ class CollectConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     run_name: str
+    base_run: str | None = None
     platforms: list[str]
     tiers: list[Tier]
     divisions: list[Division]
@@ -44,6 +49,8 @@ class CollectConfig(BaseModel):
         unknown = sorted(set(self.platforms) - PLATFORM_REGION.keys())
         if unknown:
             raise ValueError(f"unknown platforms: {unknown}")
+        if self.base_run == self.run_name:
+            raise ValueError("base_run must name another run: a run can't read from itself")
         for name in ("cutoff_spacing_days", "lookback_days", "label_window_days"):
             if getattr(self, name) % self.bucket_days:
                 raise ValueError(f"{name} must be a multiple of bucket_days ({self.bucket_days})")

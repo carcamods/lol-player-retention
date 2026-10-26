@@ -12,8 +12,8 @@ the question set before freezing: ADR 0011. Config: `configs/forward.yaml`.
 - `config.py`: `ForwardConfig` (YAML) and `Forward`, which derives a one-cutoff
   `CollectConfig` from the base run and splits its buckets into feature and label buckets.
   Validates that the cutoff is on the base run's bucket grid and after its last label window.
-- `collect.py`: `LayeredStore` (reads through to earlier stores, writes only its own),
-  `collect_features` and `collect_labels`, one store per phase.
+- `collect.py`: `collect_features` and `collect_labels`, one store per phase, each a
+  `LayeredStore` (`lolret.collect.store`) that reads through to the earlier stores.
 - `predict.py`: `freeze_predictions` (features at the cutoff, ladder trained on every labelled
   base example, `entries/ladder.csv`, models, `manifest.json`), entry reading and hash checks.
 - `score.py`: `score_forward` (checks, labels, `evaluate`, `results.json`, `report.md`);

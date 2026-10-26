@@ -9,11 +9,11 @@ This file is a map, read at the start of every session by Claude Code, Codex and
 that use `AGENTS.md`. Each module has its own `AGENTS.md` with its context: read it before
 changing code in that folder. Read what the task needs, not the whole repo.
 
-## Active work (updated 2026-10-25)
+## Active work (updated 2026-10-26)
 
-- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built and the snapshot committed, not deployed. Run `v1`:
-  6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never delete or rewrite
-  `data/`.
+- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built and the snapshot committed, not
+  deployed. Run `v1`: 6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never
+  delete or rewrite `data/`.
 - **Results (4a test, 200 churners):** LightGBM 0.464 PR-AUC against 0.455 for the recency rule,
   not a clear win. MLP 0.458, GRU 0.437 (ADR 0012) and the candidate features 0.458 (ADR 0013)
   are all level with LightGBM, which stays the headline model. Tuning LightGBM gains only noise.
@@ -28,9 +28,13 @@ changing code in that folder. Read what the task needs, not the whole repo.
   Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. The owner
   chose to publish the weekly timeline as is (ADR 0014) and `site/data/snapshot.json` is
   committed; `pages.yml` deploys by hand only.
+- **Bronze expansion (ADR 0015), collecting:** run `bronze` (`configs/collect-bronze.yaml`)
+  adds 4,704 Bronze players on top of v1's, reading v1's store through `base_run`. When it
+  finishes: `lolret build -c configs/collect-bronze.yaml`, then judge the rule written in ADR
+  0015 (Bronze-only model against the general one, on fresh Bronze test players).
 - **Next (owner):** make the repo public, set Pages' source to GitHub Actions and run
-  `pages.yml`; score
-  the forward test after 2026-11-19. The checklist lists every owner task.
+  `pages.yml`; apply for a production key (`docs/riot-production-key.md`); score the forward
+  test after 2026-11-19. The checklist lists every owner task.
 
 ## Where things live (read on demand)
 
@@ -53,6 +57,7 @@ uv run pytest                             # tests: no network, no key
 uv run mypy src tests                     # types (strict)
 uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
 uv run lolret status -c configs/collect.yaml
+uv run lolret collect -c configs/collect-bronze.yaml                # Bronze expansion, ADR 0015
 uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
 uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train

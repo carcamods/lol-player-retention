@@ -12,7 +12,6 @@ not existing proves that no outcome was collected before the predictions were fr
 
 import time
 from collections import defaultdict
-from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
@@ -25,26 +24,10 @@ from lolret.collect.runner import (
     collect_players,
     per_platform,
 )
-from lolret.collect.store import Store
+from lolret.collect.store import LayeredStore, Store
 from lolret.forward.config import Forward, ForwardError
-from lolret.riot.client import RiotClient, RiotResponse
+from lolret.riot.client import RiotClient
 from lolret.riot.routing import region_for
-
-
-class LayeredStore(Store):
-    """A run store that also answers from earlier runs' stores, which it never writes."""
-
-    def __init__(self, path: Path, bases: Sequence[Store], *, read_only: bool = False) -> None:
-        super().__init__(path, read_only=read_only)
-        self._bases = list(bases)
-
-    def get(self, key: str) -> RiotResponse | None:
-        found = super().get(key)
-        for base in self._bases:
-            if found is not None:
-                break
-            found = base.get(key)
-        return found
 
 
 def base_store_path(data_dir: Path, fwd: Forward) -> Path:

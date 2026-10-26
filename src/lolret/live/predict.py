@@ -20,10 +20,9 @@ import numpy as np
 from lolret.collect.cache import CachedRiot
 from lolret.collect.config import CollectConfig
 from lolret.collect.history import bucket_match_ids, recent_before
-from lolret.collect.store import Store
+from lolret.collect.store import LayeredStore, Store
 from lolret.dataset.build import build_examples
 from lolret.dataset.extract import extract
-from lolret.forward.collect import LayeredStore
 from lolret.model.data import FEATURES, load_examples
 from lolret.model.models import Ladder
 from lolret.riot.client import RiotClient

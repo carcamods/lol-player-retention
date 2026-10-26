@@ -1,0 +1,26 @@
+# Bronze expansion (ADR 0015): Bronze only, 464 players per division instead of v1's 72.
+# Run:    uv run lolret collect -c configs/collect-bronze.yaml
+# Watch:  uv run lolret status -c configs/collect-bronze.yaml   (from a second terminal)
+# Same seed, dates and ladder pages as v1, whose store is read and never written: v1's 864
+# Bronze players come from its cache, and only the ~4,700 new ones are requested. At ~47
+# requests per player that is ~1,570 players per platform, about 25 h with platforms in parallel.
+run_name: bronze
+base_run: v1
+
+platforms: [na1, euw1, kr]
+tiers: [BRONZE]
+divisions: [I, II, III, IV]
+players_per_division: 464     # 4 divisions x 464 = 1,856 Bronze players per platform
+pages_per_division: 6         # as in v1, so the ladder pages and the sample's first 72 match
+
+# Everything below is v1's (configs/collect.yaml), so v1's cached responses are reused.
+season_start: 2026-01-08
+latest_cutoff: 2026-09-24
+n_cutoffs: 3
+cutoff_spacing_days: 28
+lookback_days: 56
+label_window_days: 28
+bucket_days: 7
+details_per_cutoff: 20
+
+seed: 42
