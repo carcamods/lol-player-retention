@@ -229,6 +229,7 @@ aren't covered. The public site never calls the API
 ```bash
 uv run lolret collect -c configs/collect-pilot.yaml   # pilot: 15 players, ~20 min
 uv run lolret collect -c configs/collect.yaml         # full run: ~6,000 players, ~35 h, ~2.4 GB
+uv run lolret collect -c configs/collect-bronze.yaml  # Bronze expansion on top of v1, ~26 h (ADR 0015)
 uv run lolret status  -c configs/collect.yaml         # progress, from another terminal
 ```
 

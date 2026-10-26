@@ -14,9 +14,24 @@ Notable changes, newest first. Each entry says what changed and why.
 - `docs/riot-production-key.md`: a draft production-key application, the approved way to
   collect faster.
 
+- Milestones M1-M5 in `docs/requirements.md`: the path from here, each with an owner, a
+  dependency and a "done when", so a new session can pick up without a briefing.
+- Phase 4d (the Bronze expansion) in the roadmap.
+
 ### Changed
 - `LayeredStore` moved from `lolret.forward.collect` to `lolret.collect.store`, shared by
   collection runs and the forward test.
+- The Bronze collection started and was paused at 20 of 5,568 players (0 failures) for a
+  machine restart. Re-running the same command resumes it.
+
+### Notes
+- Tried inside training and didn't help: separate models per tier, region or role, region or
+  role as inputs, and four blended features. Tier as an input helped slightly but is measured
+  after the outcomes. Recorded in `src/lolret/model/AGENTS.md`, not on the site.
+- Published churn models report ROC-AUC around 0.76-0.96 on their own data and labels. Ours is
+  0.83 on the test set, but almost none compares against a days-since-last-game rule, which
+  scores 0.81 here.
+- Extra API keys from other accounts were ruled out: Riot allows one key per product.
 
 ## [2026-10-25] The snapshot is committed for the site
 

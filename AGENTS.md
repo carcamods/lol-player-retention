@@ -28,19 +28,25 @@ changing code in that folder. Read what the task needs, not the whole repo.
   Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. The owner
   chose to publish the weekly timeline as is (ADR 0014) and `site/data/snapshot.json` is
   committed; `pages.yml` deploys by hand only.
-- **Bronze expansion (ADR 0015), collecting:** run `bronze` (`configs/collect-bronze.yaml`)
-  adds 4,704 Bronze players on top of v1's, reading v1's store through `base_run`. When it
-  finishes: `lolret build -c configs/collect-bronze.yaml`, then judge the rule written in ADR
-  0015 (Bronze-only model against the general one, on fresh Bronze test players).
-- **Next (owner):** make the repo public, set Pages' source to GitHub Actions and run
-  `pages.yml`; apply for a production key (`docs/riot-production-key.md`); score the forward
-  test after 2026-11-19. The checklist lists every owner task.
+- **Bronze expansion (ADR 0015), paused:** run `bronze` (`configs/collect-bronze.yaml`) adds
+  4,704 Bronze players on top of v1's, reading v1's store through `base_run`. Paused on
+  2026-10-26 at 20 of 5,568 players complete, 0 failures; about 26 h of collection left.
+  Resume with `uv run lolret collect -c configs/collect-bronze.yaml` (keep the machine awake).
+  The rule it is judged by is fixed in ADR 0015; don't change it after seeing data.
+- **Tried inside training, didn't help (2026-10-26):** separate models per tier, region or
+  role, region or role as inputs, four blended features. Numbers in `src/lolret/model/AGENTS.md`.
+  Tier as an input helped slightly but is measured after the outcomes, so it can't be used yet.
+- **Open PR:** #23 (Bronze expansion code, ADR 0015, this checkpoint). None of the owner's
+  launch steps is done yet: the repo is private and the site isn't deployed.
+- **Next:** the milestones in `docs/requirements.md#milestones`, in order: M1 go public (owner),
+  M2 finish the Bronze run and judge ADR 0015, M3 production key (owner), M4 score the forward
+  test after 2026-11-19, M5 choose the next data round. The checklist has every task.
 
 ## Where things live (read on demand)
 
 | Need | Read |
 |---|---|
-| Goal, requirements, roadmap | `docs/requirements.md` |
+| Goal, requirements, roadmap, milestones from here | `docs/requirements.md` |
 | Every task by phase, what's left and who does it | `docs/checklist.md` |
 | Why something is the way it is | `docs/decisions/README.md` (index), then only the relevant ADR |
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
