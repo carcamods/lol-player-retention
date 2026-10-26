@@ -11,8 +11,8 @@ changing code in that folder. Read what the task needs, not the whole repo.
 
 ## Active work (updated 2026-10-26)
 
-- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built and the snapshot committed, not
-  deployed. Run `v1`: 6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never
+- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built, public and deployed (M1).
+  Run `v1`: 6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never
   delete or rewrite `data/`.
 - **Results (4a test, 200 churners):** LightGBM 0.464 PR-AUC against 0.455 for the recency rule,
   not a clear win. MLP 0.458, GRU 0.437 (ADR 0012) and the candidate features 0.458 (ADR 0013)
@@ -24,23 +24,22 @@ changing code in that folder. Read what the task needs, not the whole repo.
   --labels`, then `lolret forward score`, then `lolret export` for the site. The headline
   question: does LightGBM beat the recency rule? The forward test also decides whether the
   candidate features join the model (ADR 0013).
-- **Phase 5:** `lolret predict` (checked against the real API), `lolret export` (ADR 0014) and the
-  Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. The owner
-  chose to publish the weekly timeline as is (ADR 0014) and `site/data/snapshot.json` is
-  committed; `pages.yml` deploys by hand only.
-- **Bronze expansion (ADR 0015), paused:** run `bronze` (`configs/collect-bronze.yaml`) adds
-  4,704 Bronze players on top of v1's, reading v1's store through `base_run`. Paused on
-  2026-10-26 at 20 of 5,568 players complete, 0 failures; about 26 h of collection left.
-  Resume with `uv run lolret collect -c configs/collect-bronze.yaml` (keep the machine awake).
+- **Phase 5, M1 done (2026-10-26):** the repo is public and the site is live at
+  https://carcamods.github.io/lol-player-retention/ on the committed v1 snapshot (ADR 0014);
+  `pages.yml` deploys by hand only. A ruleset on `main` requires a PR and the three CI checks,
+  with no bypass and no approval needed.
+- **Bronze expansion (ADR 0015), collecting:** run `bronze` (`configs/collect-bronze.yaml`) adds
+  4,704 Bronze players on top of v1's, reading v1's store through `base_run`. Resumed by the
+  owner in their own terminal on 2026-10-26 (105 of 5,568 players complete, 0 failures, at
+  this note); about 26 h in all, pings Discord when done. If it stops, re-run
+  `uv run lolret collect -c configs/collect-bronze.yaml` (keep the machine awake).
   The rule it is judged by is fixed in ADR 0015; don't change it after seeing data.
 - **Tried inside training, didn't help (2026-10-26):** separate models per tier, region or
   role, region or role as inputs, four blended features. Numbers in `src/lolret/model/AGENTS.md`.
   Tier as an input helped slightly but is measured after the outcomes, so it can't be used yet.
-- **Open PR:** #23 (Bronze expansion code, ADR 0015, this checkpoint). None of the owner's
-  launch steps is done yet: the repo is private and the site isn't deployed.
-- **Next:** the milestones in `docs/requirements.md#milestones`, in order: M1 go public (owner),
-  M2 finish the Bronze run and judge ADR 0015, M3 production key (owner), M4 score the forward
-  test after 2026-11-19, M5 choose the next data round. The checklist has every task.
+- **Next:** the milestones in `docs/requirements.md#milestones`, in order: M2 finish the Bronze
+  run and judge ADR 0015, M3 production key (owner), M4 score the forward test after
+  2026-11-19, M5 choose the next data round. The checklist has every task.
 
 ## Where things live (read on demand)
 
