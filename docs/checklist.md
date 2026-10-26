@@ -85,6 +85,19 @@ of waiting, and launch doesn't wait for it.
 - [ ] Add the result to the model card and the site: `lolret export`, copy the snapshot into
       `site/data/`, commit.
 
+## Bronze expansion (ADR 0015)
+
+- [x] Rule written before collecting: Bronze-only model against the general one, then against
+      the recency rule, on fresh Bronze test players.
+- [x] `base_run`, so a run reads an earlier run's store without writing it; checked offline
+      that the Bronze sample starts with v1's 72 players in all 12 divisions.
+- [ ] Collect `configs/collect-bronze.yaml`: 4,704 new players, about 26 h. Paused 2026-10-26
+      at 20 of 5,568 complete; re-run the same command to resume.
+- [ ] `lolret build -c configs/collect-bronze.yaml`.
+- [ ] Write the ADR 0015 evaluation: v1 and `bronze` examples together, both models with ADR
+      0008's protocol, judged on the fresh Bronze test players (new players only).
+- [ ] Apply the rule exactly as written, record the result in ADR 0015, and report EUW alone.
+
 ## Phase 5: launch
 
 - [x] Snapshot export: salted-hash IDs, JSON for the site, per-player top drivers (FR4,
@@ -116,5 +129,9 @@ of waiting, and launch doesn't wait for it.
 
 ## Phase 6: later
 
-- [ ] Apply for a Riot production key, with the live site as the prototype. *Matias*
+- [ ] Apply for a Riot production key with `docs/riot-production-key.md`, once the site is
+      live. *Matias*
+- [ ] Choose the next data round from the Bronze and forward-test results (milestone M5), with
+      an ADR and a rule set before collecting. Candidates: EUW-focused expansion; each player's
+      rank recorded at every future cutoff; a history longer than 8 weeks. *Matias decides*
 - [ ] Live lookup API (FR7).

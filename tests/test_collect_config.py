@@ -34,7 +34,7 @@ def base_config(**overrides: Any) -> dict[str, Any]:
     return config | overrides
 
 
-@pytest.mark.parametrize("name", ["collect.yaml", "collect-pilot.yaml"])
+@pytest.mark.parametrize("name", ["collect.yaml", "collect-pilot.yaml", "collect-bronze.yaml"])
 def test_shipped_configs_are_valid(name: str) -> None:
     cfg = load_config(REPO_ROOT / "configs" / name)
 
@@ -62,6 +62,7 @@ def test_buckets_tile_the_range_and_align_with_cutoffs() -> None:
         ({"platforms": ["na1", "xx9"]}, "unknown platforms"),
         ({"tiers": ["MASTER"]}, "tiers"),
         ({"surprise": 1}, "surprise"),
+        ({"base_run": "test"}, "can't read from itself"),
     ],
 )
 def test_invalid_configs_are_rejected(overrides: dict[str, Any], message: str) -> None:

@@ -17,8 +17,8 @@ from typing import Any
 
 import numpy as np
 
+from lolret.collect.store import LayeredStore
 from lolret.forward.collect import (
-    LayeredStore,
     labels_store_path,
     open_base,
     open_features,

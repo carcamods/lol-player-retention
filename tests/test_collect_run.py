@@ -11,7 +11,7 @@ import respx
 
 from lolret.collect.config import CollectConfig
 from lolret.collect.runner import RunResult, run_collection
-from lolret.collect.store import Store
+from lolret.collect.store import LayeredStore, Store
 from lolret.riot.client import RiotAuthError, RiotClient
 
 NOW = datetime(2026, 10, 23, tzinfo=UTC)
@@ -151,6 +151,35 @@ async def test_raising_the_target_keeps_existing_players_and_adds_more(
     assert bigger.platforms[0].complete == 5
     # Only the 2 new players' histories were requested.
     assert fake_riot["ids"].call_count - calls_before == 2 * 20
+
+
+@pytest.mark.anyio
+async def test_a_run_on_a_base_run_reuses_its_players_and_requests_only_new_ones(
+    fake_riot: respx.MockRouter, tmp_path: Path
+) -> None:
+    base_path = tmp_path / "base.sqlite"
+    base = Store(base_path)
+    await run(base)
+    base_players = [p.puuid for p in base.players("na1")]
+    base.close()
+    base = Store(base_path, read_only=True)
+    before = {name: fake_riot[name].call_count for name in ("entries", "ids", "match")}
+    with sqlite3.connect(base_path) as db:
+        base_rows = db.execute("SELECT COUNT(*) FROM responses").fetchone()
+
+    bigger = CONFIG.model_copy(
+        update={"run_name": "bigger", "base_run": "base", "players_per_division": 5}
+    )
+    store = LayeredStore(tmp_path / "bigger.sqlite", [base])
+    result = await run(store, cfg=bigger)
+
+    players = [p.puuid for p in store.players("na1")]
+    assert players[:3] == base_players  # the same sample, extended
+    assert result.platforms[0].complete == 5
+    assert fake_riot["entries"].call_count == before["entries"]  # ladder pages came from the base
+    assert fake_riot["ids"].call_count - before["ids"] == 2 * 20  # only the 2 new players
+    with sqlite3.connect(base_path) as db:
+        assert db.execute("SELECT COUNT(*) FROM responses").fetchone() == base_rows
 
 
 @pytest.mark.anyio

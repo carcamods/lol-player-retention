@@ -9,11 +9,11 @@ This file is a map, read at the start of every session by Claude Code, Codex and
 that use `AGENTS.md`. Each module has its own `AGENTS.md` with its context: read it before
 changing code in that folder. Read what the task needs, not the whole repo.
 
-## Active work (updated 2026-10-25)
+## Active work (updated 2026-10-26)
 
-- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built and the snapshot committed, not deployed. Run `v1`:
-  6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never delete or rewrite
-  `data/`.
+- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built and the snapshot committed, not
+  deployed. Run `v1`: 6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never
+  delete or rewrite `data/`.
 - **Results (4a test, 200 churners):** LightGBM 0.464 PR-AUC against 0.455 for the recency rule,
   not a clear win. MLP 0.458, GRU 0.437 (ADR 0012) and the candidate features 0.458 (ADR 0013)
   are all level with LightGBM, which stays the headline model. Tuning LightGBM gains only noise.
@@ -28,15 +28,25 @@ changing code in that folder. Read what the task needs, not the whole repo.
   Quarto site (`site/`, light and dark, built in CI on a demo snapshot) are merged. The owner
   chose to publish the weekly timeline as is (ADR 0014) and `site/data/snapshot.json` is
   committed; `pages.yml` deploys by hand only.
-- **Next (owner):** make the repo public, set Pages' source to GitHub Actions and run
-  `pages.yml`; score
-  the forward test after 2026-11-19. The checklist lists every owner task.
+- **Bronze expansion (ADR 0015), paused:** run `bronze` (`configs/collect-bronze.yaml`) adds
+  4,704 Bronze players on top of v1's, reading v1's store through `base_run`. Paused on
+  2026-10-26 at 20 of 5,568 players complete, 0 failures; about 26 h of collection left.
+  Resume with `uv run lolret collect -c configs/collect-bronze.yaml` (keep the machine awake).
+  The rule it is judged by is fixed in ADR 0015; don't change it after seeing data.
+- **Tried inside training, didn't help (2026-10-26):** separate models per tier, region or
+  role, region or role as inputs, four blended features. Numbers in `src/lolret/model/AGENTS.md`.
+  Tier as an input helped slightly but is measured after the outcomes, so it can't be used yet.
+- **Open PR:** #23 (Bronze expansion code, ADR 0015, this checkpoint). None of the owner's
+  launch steps is done yet: the repo is private and the site isn't deployed.
+- **Next:** the milestones in `docs/requirements.md#milestones`, in order: M1 go public (owner),
+  M2 finish the Bronze run and judge ADR 0015, M3 production key (owner), M4 score the forward
+  test after 2026-11-19, M5 choose the next data round. The checklist has every task.
 
 ## Where things live (read on demand)
 
 | Need | Read |
 |---|---|
-| Goal, requirements, roadmap | `docs/requirements.md` |
+| Goal, requirements, roadmap, milestones from here | `docs/requirements.md` |
 | Every task by phase, what's left and who does it | `docs/checklist.md` |
 | Why something is the way it is | `docs/decisions/README.md` (index), then only the relevant ADR |
 | What changed recently | the top ~40 lines of `CHANGELOG.md` |
@@ -53,6 +63,7 @@ uv run pytest                             # tests: no network, no key
 uv run mypy src tests                     # types (strict)
 uv run pre-commit run --all-files         # ruff, format, file checks, gitleaks
 uv run lolret status -c configs/collect.yaml
+uv run lolret collect -c configs/collect-bronze.yaml                # Bronze expansion, ADR 0015
 uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
 uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train

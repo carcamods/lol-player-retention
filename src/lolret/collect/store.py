@@ -6,12 +6,15 @@ the file while `lolret collect` is writing to it. Phase 3 reads this file for an
 
 Bodies are stored as zlib-compressed JSON: a match is ~80 KB raw but ~11 KB compressed, which
 keeps a full run at ~2 GB instead of ~13 GB.
+
+`LayeredStore` is a run's store that also answers from earlier runs' stores, read-only: the
+forward test and a run with `base_run` (ADR 0015) reuse what an earlier run already fetched.
 """
 
 import json
 import sqlite3
 import zlib
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -181,3 +184,19 @@ class Store:
             "complete": complete,
             "failures": {"open": int(failures)},
         }
+
+
+class LayeredStore(Store):
+    """A run store that also answers from earlier runs' stores, which it never writes."""
+
+    def __init__(self, path: Path, bases: Sequence[Store], *, read_only: bool = False) -> None:
+        super().__init__(path, read_only=read_only)
+        self._bases = list(bases)
+
+    def get(self, key: str) -> RiotResponse | None:
+        found = super().get(key)
+        for base in self._bases:
+            if found is not None:
+                break
+            found = base.get(key)
+        return found

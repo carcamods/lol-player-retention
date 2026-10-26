@@ -49,6 +49,27 @@ beats the recency rule yet. A test set with fewer than 200 churners marks the mo
   The hand-set parameters stay; never tune on the test set.
 - Run `v1`'s test set has 200 churners, so PR-AUC intervals are about +/-0.07 wide. Differences
   between models smaller than that aren't resolvable; say so rather than ranking them.
+- PR-AUC isn't comparable across groups with different churn: in training, Bronze churns 26.5%
+  and Diamond 7.3% (others 17-24%; regions 17-18.5%; main roles 17-19%).
+
+## Tried inside training, didn't help (2026-10-26)
+
+Player-grouped 5-fold CV on v1's training players only, repeated 3-5 times, LightGBM with
+`configs/train.yaml` and inner early stopping. Out-of-fold PR-AUC; the general model scores
+0.496-0.500. Ad-hoc scripts, not kept. Internal notes: not for the model card or the site.
+
+- **Separate models** per tier (0.482), region (0.463) or main role (0.464): worse than the
+  general model in every tier, region and role. Each loses data, and the signals are shared.
+- **Inputs:** region (no change), main role (-0.004), KDA, deaths and win rate relative to the
+  role's average (no change), four blends (activity trend 7d vs 8w and 2w vs the 2 before,
+  hours idle vs the usual gap, recent losses x idle week): -0.003 (95% CI -0.007 to +0.001).
+- **Tier as an input:** +0.007 PR-AUC and better log loss, mostly in Diamond. But tier is read
+  at collection time, after the outcomes (a Diamond who quits can decay), so it is a leak until
+  rank is recorded at each cutoff.
+- **Bronze learning curve:** Bronze-only 0.531 to 0.551 (136 to 547 examples, +0.012 per
+  doubling); the general model 0.570 to 0.601 on the same players; recency 0.549. It motivates
+  ADR 0015.
+- In Gold, churn barely moves with recent win rate (18-23% across bands).
 
 ## Tests
 

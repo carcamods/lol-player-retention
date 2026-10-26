@@ -19,6 +19,7 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | [0012](0012-neural-nets.md) | Neural nets: leak-guarded match sequences, CPU training with the 4a protocol, and the rule for replacing LightGBM | Accepted |
 | [0013](0013-candidate-features.md) | Five candidate features (break history, account level, repeated teammates) kept apart and judged by the forward test | Accepted |
 | [0014](0014-snapshot-export.md) | Snapshot export: held-out players numbered by a throwaway salt; published with the weekly timeline as is | Accepted |
+| [0015](0015-bronze-expansion.md) | Bronze expansion: 4,704 more Bronze players on top of v1, and the rule (Bronze-only model against the general one) set before collecting | Accepted |
 
 ## Template
 

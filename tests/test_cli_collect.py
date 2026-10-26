@@ -37,6 +37,19 @@ def test_status_reports_progress(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     assert "target 15" in result.stdout
 
 
+def test_a_run_whose_base_run_has_no_data_exits_with_an_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("DATA_DIR", str(tmp_path / "data"))
+    Store(tmp_path / "data" / "raw" / "bronze.sqlite").close()
+
+    result = CliRunner().invoke(
+        app, ["build", "-c", str(REPO_ROOT / "configs" / "collect-bronze.yaml")]
+    )
+
+    assert result.exit_code == 1
+
+
 def test_build_without_collected_data_exits_with_an_error() -> None:
     result = CliRunner().invoke(app, ["build", "-c", PILOT])
 

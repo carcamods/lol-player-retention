@@ -26,10 +26,9 @@ from typer.testing import CliRunner
 from lolret.cli import app
 from lolret.collect.config import CollectConfig
 from lolret.collect.runner import run_collection
-from lolret.collect.store import Store
+from lolret.collect.store import LayeredStore, Store
 from lolret.forward.candidates import freeze_candidates_entry
 from lolret.forward.collect import (
-    LayeredStore,
     base_store_path,
     collect_features,
     collect_labels,

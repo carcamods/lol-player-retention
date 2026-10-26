@@ -4,7 +4,8 @@ Pipeline commands (export, predict) are added phase by phase.
 """
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
@@ -14,7 +15,7 @@ import typer
 from lolret import __version__
 from lolret.collect.config import CollectConfig, load_config
 from lolret.collect.runner import RunResult, format_duration, run_collection
-from lolret.collect.store import Store
+from lolret.collect.store import LayeredStore, Store
 from lolret.config import Settings, get_settings
 from lolret.dataset.build import build_dataset
 from lolret.forward.collect import collect_features, collect_labels
@@ -59,6 +60,32 @@ EXIT_INTERRUPTED = 130
 
 def run_db_path(settings: Settings, cfg: CollectConfig) -> Path:
     return settings.data_dir / "raw" / f"{cfg.run_name}.sqlite"
+
+
+@contextmanager
+def run_store(
+    settings: Settings, cfg: CollectConfig, *, read_only: bool = False
+) -> Iterator[Store]:
+    """The run's store. With `base_run`, it also reads that run's store, which it never writes."""
+    bases: list[Store] = []
+    if cfg.base_run is not None:
+        base = settings.data_dir / "raw" / f"{cfg.base_run}.sqlite"
+        if not base.exists():
+            log.error(
+                "Run '%s' reads run '%s', which has no data at %s.",
+                cfg.run_name,
+                cfg.base_run,
+                base,
+            )
+            raise typer.Exit(1)
+        bases.append(Store(base, read_only=True))
+    store = LayeredStore(run_db_path(settings, cfg), bases, read_only=read_only)
+    try:
+        yield store
+    finally:
+        store.close()
+        for base_store in bases:
+            base_store.close()
 
 
 @app.callback()
@@ -138,18 +165,17 @@ def collect(config: ConfigOption = DEFAULT_COLLECT_CONFIG) -> None:
     settings = get_settings()
     api_key = _require_key(settings)
     cfg = load_config(config)
-    store = Store(run_db_path(settings, cfg))
-    log.info("Run '%s': %d cutoffs, data in %s", cfg.run_name, cfg.n_cutoffs, store.path)
     label = f"lolret collect '{cfg.run_name}'"
-    try:
+    with run_store(settings, cfg) as store:
+        log.info("Run '%s': %d cutoffs, data in %s", cfg.run_name, cfg.n_cutoffs, store.path)
+        if cfg.base_run is not None:
+            log.info("Reading run '%s' too; it is never written.", cfg.base_run)
         result = _run_requests(
             label,
             settings,
             api_key,
             lambda client: run_collection(cfg, store, client, now=datetime.now(UTC)),
         )
-    finally:
-        store.close()
     _report(label, settings, result)
 
 
@@ -169,6 +195,8 @@ def status(config: ConfigOption = DEFAULT_COLLECT_CONFIG) -> None:
         store.close()
     target = len(cfg.tiers) * len(cfg.divisions) * cfg.players_per_division
     typer.echo(f"Run '{cfg.run_name}' ({path})")
+    if cfg.base_run is not None:
+        typer.echo(f"  reads run '{cfg.base_run}' too; responses below are this run's own")
     for platform in cfg.platforms:
         sampled = summary["players"].get(platform, 0)
         complete = summary["complete"].get(platform, 0)
@@ -195,11 +223,8 @@ def build(config: ConfigOption = DEFAULT_COLLECT_CONFIG) -> None:
             "No collected data for run '%s' at %s. Run `lolret collect` first.", cfg.run_name, raw
         )
         raise typer.Exit(1)
-    store = Store(raw, read_only=True)
-    try:
+    with run_store(settings, cfg, read_only=True) as store:
         summary = build_dataset(cfg, store, settings.data_dir / "processed" / cfg.run_name)
-    finally:
-        store.close()
     churn = "n/a" if summary.churn_rate_eligible is None else f"{summary.churn_rate_eligible:.1%}"
     log.info(
         "Built %d examples from %d players: %d eligible, churn among eligible %s. Data in %s",
