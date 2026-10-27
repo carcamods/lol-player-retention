@@ -45,6 +45,12 @@ either way (ADR 0010: four break features were tried this way and removed).
 NULLs are deliberate (for example, no match features when the only recent game was still
 running at T). Imputation belongs to modelling, not here.
 
+`gap_hours_median` depends slightly on what else is in the store. The oldest of the 20 recent
+games gets a gap only if the game before it has details, and those may have been fetched for
+another player in the same game. It isn't a leak (that game ended before T), but the same player
+built from stores holding different games can differ: 48 of v1's rows did in the Bronze run's
+build (ADR 0015). Fixing it changes the dataset, so ask the owner first.
+
 ## Tests
 
 `tests/test_dataset.py`: the scenario tests (features, sequences, candidates), the leak-guard

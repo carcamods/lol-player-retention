@@ -116,7 +116,7 @@ before the current split started. All cutoffs are chosen after the split start.
 | 4a | Classical models, evaluation, model card (FR3) | Done (ADR 0008); no model clearly beats the recency rule; break features tried and dropped (ADR 0010) |
 | 4b | Neural nets on Colab (FR3b) | Done (ADR 0012): MLP and GRU trained on CPU, level with LightGBM; entered in the forward test |
 | 4c | Forward test: predict at today's cutoff, collect again 28 days later, compare (ADR 0006) | Started (ADR 0011): predictions at 2026-10-22 frozen on 2026-10-25; scored after 2026-11-19 |
-| 4d | Bronze expansion: does a Bronze-only model win with enough data? (ADR 0015) | Collecting: resumed 2026-10-26, about 26 h; rule fixed before collecting |
+| 4d | Bronze expansion: does a Bronze-only model win with enough data? (ADR 0015) | Done (2026-10-27): rule not met, Bronze-only 0.570 against the general model's 0.566 on 750 fresh Bronze players; one model stays |
 | 5 | Snapshot export, Quarto site, `predict` CLI, go public (FR4–FR6) | Nearly done: repo public and site live (2026-10-26); the owner's CV, LinkedIn and old-repo tasks left |
 | 6 | Production key and live lookup (FR7) | Later; production-key application drafted (`docs/riot-production-key.md`) |
 
@@ -128,9 +128,9 @@ The path from here, in order. Each has a clear "done when". Tasks are in the
 | # | Milestone | Who | Depends on | Done when |
 |---|---|---|---|---|
 | M1 | **Done 2026-10-26.** **Go public.** Merge the open PRs, make the repo public with branch protection, set Pages' source to GitHub Actions, run `pages.yml`, add the site link to the README | Owner (README link: agent) | - | The site is live and linked |
-| M2 | **Bronze expansion judged.** Resume and finish `configs/collect-bronze.yaml` (~26 h), `lolret build` it, write the ADR 0015 evaluation (v1 + `bronze` examples; fresh Bronze test players only), apply the rule exactly as written | Agent (machine time) | - | ADR 0015 has a Result section, positive or negative |
+| M2 | **Done 2026-10-27.** **Bronze expansion judged.** Resume and finish `configs/collect-bronze.yaml` (~26 h), `lolret build` it, write the ADR 0015 evaluation (v1 + `bronze` examples; fresh Bronze test players only), apply the rule exactly as written | Agent (machine time) | - | ADR 0015 has a Result section, positive or negative |
 | M3 | **Production key.** Submit `docs/riot-production-key.md`; if approved, set `RIOT_RATE_LIMITS` in `.env` to the new limits | Owner | M1 (reviewers want a live product) | Approved or declined |
 | M4 | **Forward test scored.** After 2026-11-19 00:00 UTC: `lolret forward collect --labels`, `lolret forward score`, record the result in ADR 0011, then `lolret export`, commit the snapshot and redeploy | Owner runs, agent records | The date | ADR 0011 has a Result section and the site shows it |
-| M5 | **Next data round, chosen from M2 and M4.** Candidates: an EUW-focused expansion (if Bronze-only wins), recording each player's rank at every future cutoff (so tier can be an input), a history longer than 8 weeks. One ADR with a rule set before collecting | Owner decides, agent builds | M2, M4 (M3 makes it fast) | An ADR is accepted and its collection started |
+| M5 | **Next data round, chosen from M2 and M4.** Candidates: recording each player's rank at every future cutoff (so tier can be an input), a history longer than 8 weeks. The EUW-focused expansion dropped out with M2's result. One ADR with a rule set before collecting | Owner decides, agent builds | M2, M4 (M3 makes it fast) | An ADR is accepted and its collection started |
 
 M1 to M3 can run in parallel; M4 waits for its date. Phase 6's live lookup (FR7) comes after M3.

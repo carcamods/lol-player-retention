@@ -2,6 +2,31 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-27] Bronze expansion judged: one model stays
+
+### Added
+- `lolret train-bronze` (`src/lolret/model/bronze.py`): applies ADR 0015's rule as written. It
+  joins v1 and run `bronze` (v1's rows for v1's players), fits a general and a Bronze-only
+  LightGBM with ADR 0008's protocol, and judges them on the fresh Bronze test players. It also
+  reports EUW alone, a learning curve, and whether v1's players match across the two builds.
+- ADR 0015's result: Bronze-only 0.570 PR-AUC against the general model's 0.566 on 750 fresh
+  Bronze players (179 churned), +0.004 (95% CI -0.033 to +0.037). The rule wasn't met, so one
+  model for every tier stays. The general model against the recency rule: +0.028 (-0.021 to
+  +0.084), not a clear win either. A short paragraph in the README.
+
+### Changed
+- The Bronze run finished (5,568 players, 0 failures) and was built: 9,081 eligible examples.
+- Milestone M2 is done. The EUW-focused expansion leaves M5's candidates, since it depended on
+  a Bronze-only win.
+- `streamlit_app` ticked in the checklist: private, archived, and its Streamlit Cloud app
+  deleted.
+
+### Notes
+- `gap_hours_median` differs in 48 of v1's rows between the v1 and Bronze builds: the Bronze
+  store caches extra games for some v1 players, fetched for new players in the same games, and
+  the oldest recent game's gap looks one game further back when it's cached. Not a leak; noted
+  in `src/lolret/dataset/AGENTS.md` for the owner to decide on.
+
 ## [2026-10-26] The site is live
 
 ### Added
