@@ -1,6 +1,7 @@
 # 0015: Bronze expansion, judged by a rule set before collecting
 
-**Status:** Accepted, 2026-10-26. Collection running; the rule below is judged once it is done.
+**Status:** Accepted, 2026-10-26. Result, 2026-10-27: the rule was not met, so the general
+model stays (one model for every tier).
 
 ## Context
 
@@ -56,6 +57,51 @@ out, at the cutoffs before 2026-09-24:
 **Reported, not decided on:** the same comparisons on EUW alone (the largest Bronze ladder:
 about 593k players, against 512k on KR and 284k on NA, estimated from the cached pages), and the
 Bronze learning curve with all the new data.
+
+## Result (2026-10-27)
+
+The run finished with all 5,568 Bronze players (4,704 new) and 0 open failures; `lolret build`
+gave 9,081 eligible examples, 23.9% churned. `lolret train-bronze -c configs/train.yaml` applied
+the rule as written (`src/lolret/model/bronze.py`; numbers in `data/models/bronze/evaluation.json`).
+
+- **Data.** The general model trained on 9,249 examples from 5,487 players (20.4% churned), the
+  Bronze-only model on their Bronze rows: 4,316 examples from 2,635 players (24.4%). Fresh
+  Bronze test players: 750, of whom 179 churned (estimated beforehand: about 700 and 180).
+- **Rule 1 not met: the general model stays.** Bronze-only PR-AUC 0.570, general 0.566: +0.004
+  (95% CI -0.033 to +0.037). ROC-AUC 0.837 against 0.838 and Brier 0.133 for both: on Bronze
+  the two models are the same.
+- **Rule 2 not met: the general model doesn't beat the recency rule.** PR-AUC 0.566 against
+  0.538: +0.028 (95% CI -0.021 to +0.084). The other metrics favour the model more clearly
+  (ROC-AUC 0.838 against 0.791, Brier 0.133 against 0.146), but the rule is PR-AUC's interval,
+  and it includes zero.
+
+Reported, not decided on:
+
+- **EUW alone** (235 players, 60 churned): Bronze-only against general -0.016 (95% CI -0.070
+  to +0.027); general against the recency rule +0.009 (-0.063 to +0.091). Nothing points to a
+  gain specific to EUW.
+- **Learning curve.** Bronze-only on shares of the Bronze training players, on the same test
+  players (below the full set, the mean of 3 random subsets): 272 examples 0.518, 538 0.538,
+  1,075 0.540, 2,158 0.558, 4,316 0.570. About +0.013 per doubling, as v1's curve suggested
+  (+0.012). With 8 times v1's Bronze data the Bronze-only model reaches the general model, which
+  learned from the same Bronze rows plus every other tier, but doesn't pass it.
+- **v1's players in both runs.** The 646 v1 Bronze players with labelled rows have the same
+  labels in both builds. Two features differ: `kda` by float rounding (9 rows) and
+  `gap_hours_median` (by up to 1.7 hours in 48 rows of 39 players, 36 of those rows among the
+  eligible, labelled ones that are modelled). The Bronze store holds extra
+  match details for 68 of these players, fetched for new players in the same games, and the
+  oldest of the 20 recent games gets a gap only when the game before it is cached. Those games
+  ended before the cutoff, so it isn't a leak, but the feature depends slightly on what else was
+  collected. Every test player's rows come from the one build. Noted in
+  `src/lolret/dataset/AGENTS.md`.
+
+**What it means.** On Bronze, one model for every tier predicts as well as a model of its own,
+even with 4,316 Bronze training examples: the signals are shared across tiers, as the per-tier
+models on v1 suggested. The expansion still paid off as test data, with 179 fresh churners
+against 33 Bronze churners in the 4a test set. It also gave the model's largest lead over the
+recency rule so far, though still not one that clears the rule. The headline model and the forward test
+(ADR 0011) are unchanged. The EUW-focused expansion was the next step only if Bronze-only won,
+so it drops out of milestone M5.
 
 ## Consequences
 

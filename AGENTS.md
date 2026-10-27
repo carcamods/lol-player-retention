@@ -9,9 +9,9 @@ This file is a map, read at the start of every session by Claude Code, Codex and
 that use `AGENTS.md`. Each module has its own `AGENTS.md` with its context: read it before
 changing code in that folder. Read what the task needs, not the whole repo.
 
-## Active work (updated 2026-10-26)
+## Active work (updated 2026-10-27)
 
-- **Done:** Phases 1-3, 4a, 4b and 4c's freeze; Phase 5 built, public and deployed (M1).
+- **Done:** Phases 1-3, 4a, 4b, 4c's freeze and 4d; Phase 5 built, public and deployed (M1).
   Run `v1`: 6,048 players, 11,678 eligible examples, churn 17-19% per cutoff. Never
   delete or rewrite `data/`.
 - **Results (4a test, 200 churners):** LightGBM 0.464 PR-AUC against 0.455 for the recency rule,
@@ -28,18 +28,19 @@ changing code in that folder. Read what the task needs, not the whole repo.
   https://carcamods.github.io/lol-player-retention/ on the committed v1 snapshot (ADR 0014);
   `pages.yml` deploys by hand only. A ruleset on `main` requires a PR and the three CI checks,
   with no bypass and no approval needed.
-- **Bronze expansion (ADR 0015), collecting:** run `bronze` (`configs/collect-bronze.yaml`) adds
-  4,704 Bronze players on top of v1's, reading v1's store through `base_run`. Resumed by the
-  owner in their own terminal on 2026-10-26 (105 of 5,568 players complete, 0 failures, at
-  this note); about 26 h in all, pings Discord when done. If it stops, re-run
-  `uv run lolret collect -c configs/collect-bronze.yaml` (keep the machine awake).
-  The rule it is judged by is fixed in ADR 0015; don't change it after seeing data.
+- **Bronze expansion (ADR 0015), M2 done (2026-10-27):** run `bronze` added 4,704 Bronze
+  players on top of v1's (9,081 eligible examples). On 750 fresh Bronze test players (179
+  churned), Bronze-only 0.570 PR-AUC against the general model's 0.566: the rule wasn't met, so
+  one model for every tier stays. The general model against the recency rule: +0.028 (95% CI
+  -0.021 to +0.084). `lolret train-bronze` reproduces it. The EUW-focused expansion dropped
+  out of M5. Open for the owner: `gap_hours_median` depends slightly on what else is cached
+  (`src/lolret/dataset/AGENTS.md`).
 - **Tried inside training, didn't help (2026-10-26):** separate models per tier, region or
   role, region or role as inputs, four blended features. Numbers in `src/lolret/model/AGENTS.md`.
   Tier as an input helped slightly but is measured after the outcomes, so it can't be used yet.
-- **Next:** the milestones in `docs/requirements.md#milestones`, in order: M2 finish the Bronze
-  run and judge ADR 0015, M3 production key (owner), M4 score the forward test after
-  2026-11-19, M5 choose the next data round. The checklist has every task.
+- **Next:** the milestones in `docs/requirements.md#milestones`: M3 production key (owner), M4
+  score the forward test after 2026-11-19, M5 choose the next data round (rank at every
+  cutoff, or a longer history). The checklist has every task.
 
 ## Where things live (read on demand)
 
@@ -67,6 +68,7 @@ uv run lolret build  -c configs/collect.yaml
 uv run lolret train  -c configs/train.yaml
 uv run lolret train-nn -c configs/train_nn.yaml                     # MLP and GRU, after train
 uv run lolret train-candidates -c configs/train.yaml                # candidate features, ADR 0013
+uv run lolret train-bronze -c configs/train.yaml                    # Bronze expansion, ADR 0015
 uv run lolret predict --riot-id Name#TAG --platform euw1           # live, with your own key
 uv run lolret export -c configs/train.yaml                          # snapshot for the site
 uv run lolret forward collect|predict|score -c configs/forward.yaml   # forward test, ADR 0011

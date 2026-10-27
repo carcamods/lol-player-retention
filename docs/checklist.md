@@ -91,12 +91,14 @@ of waiting, and launch doesn't wait for it.
       the recency rule, on fresh Bronze test players.
 - [x] `base_run`, so a run reads an earlier run's store without writing it; checked offline
       that the Bronze sample starts with v1's 72 players in all 12 divisions.
-- [ ] Collect `configs/collect-bronze.yaml`: 4,704 new players, about 26 h. Paused 2026-10-26
-      at 20 of 5,568 complete; re-run the same command to resume.
-- [ ] `lolret build -c configs/collect-bronze.yaml`.
-- [ ] Write the ADR 0015 evaluation: v1 and `bronze` examples together, both models with ADR
-      0008's protocol, judged on the fresh Bronze test players (new players only).
-- [ ] Apply the rule exactly as written, record the result in ADR 0015, and report EUW alone.
+- [x] Collect `configs/collect-bronze.yaml`: 4,704 new players (finished 2026-10-27, all 5,568
+      complete, 0 failures).
+- [x] `lolret build -c configs/collect-bronze.yaml`: 9,081 eligible examples, 23.9% churned.
+- [x] Write the ADR 0015 evaluation (`lolret train-bronze`): v1 and `bronze` examples together,
+      both models with ADR 0008's protocol, judged on the fresh Bronze test players (new players
+      only).
+- [x] Apply the rule exactly as written, record the result in ADR 0015, and report EUW alone
+      (2026-10-27: not met, the general model stays).
 
 ## Phase 5: launch
 
@@ -126,7 +128,8 @@ of waiting, and launch doesn't wait for it.
 - [x] Make the repo public and turn on branch protection (PR and green CI to merge). *Matias*
       (2026-10-26: ruleset `main` on the default branch, no bypass; the three CI checks
       required, no approval needed.)
-- [ ] Archive or make private `streamlit_app`, which still serves the 2024 model. *Matias*
+- [x] Archive or make private `streamlit_app`, which still serves the 2024 model. *Matias*
+      (2026-10-26: private and archived, and its Streamlit Cloud app deleted.)
 - [ ] Link the repo and site from the CV and LinkedIn. *Matias*
 
 ## Phase 6: later
@@ -134,6 +137,7 @@ of waiting, and launch doesn't wait for it.
 - [ ] Apply for a Riot production key with `docs/riot-production-key.md`, once the site is
       live. *Matias*
 - [ ] Choose the next data round from the Bronze and forward-test results (milestone M5), with
-      an ADR and a rule set before collecting. Candidates: EUW-focused expansion; each player's
-      rank recorded at every future cutoff; a history longer than 8 weeks. *Matias decides*
+      an ADR and a rule set before collecting. Candidates: each player's rank recorded at every
+      future cutoff; a history longer than 8 weeks. (The EUW-focused expansion dropped out: it
+      depended on a Bronze-only win, ADR 0015.) *Matias decides*
 - [ ] Live lookup API (FR7).

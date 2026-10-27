@@ -24,6 +24,11 @@ beats the recency rule yet. A test set with fewer than 200 churners marks the mo
 - `card.py`: `render_model_card` from the metrics dict.
 - `candidates.py`: `CANDIDATES`, `load_candidates`, `CandidateGBM` (LightGBM on the 21
   features plus the candidates, same protocol) and `evaluate_candidates` (ADR 0013).
+- `bronze.py`: the Bronze expansion's judgement (ADR 0015). `combine` joins v1 and run
+  `bronze` (v1's rows for v1's players), `LightGBM` is the ladder's protocol on its own,
+  `judge` applies the two-step rule, and `evaluate_bronze` writes
+  `data/models/bronze/evaluation.json` (the rule, EUW alone, the learning curve).
+  `lolret train-bronze -c configs/train.yaml`.
 
 ## Rules that must not break
 
@@ -68,7 +73,9 @@ Player-grouped 5-fold CV on v1's training players only, repeated 3-5 times, Ligh
   rank is recorded at each cutoff.
 - **Bronze learning curve:** Bronze-only 0.531 to 0.551 (136 to 547 examples, +0.012 per
   doubling); the general model 0.570 to 0.601 on the same players; recency 0.549. It motivates
-  ADR 0015.
+  ADR 0015, judged on 2026-10-27 with 8 times the Bronze data: Bronze-only 0.570 against the
+  general model's 0.566 on 750 fresh Bronze test players, +0.004 (95% CI -0.033 to +0.037). The
+  rule wasn't met, so one model for every tier stays.
 - In Gold, churn barely moves with recent win rate (18-23% across bands).
 
 ## Tests

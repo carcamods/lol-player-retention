@@ -72,6 +72,14 @@ win rate and KDA carry almost no signal at all. Four features aimed at that gap 
 the longest previous gap, account level) lifted LightGBM to 0.476, but didn't pass the rule set
 before training, so they were dropped ([ADR 0010](docs/decisions/0010-break-features.md)).
 
+More data didn't change that. Bronze churns the most, and a model trained on Bronze alone did
+worse than the general one on v1, so a second collection added 4,704 Bronze players to test
+whether Bronze was just short of data, with the rule written before collecting
+([ADR 0015](docs/decisions/0015-bronze-expansion.md)). On 750 fresh Bronze test players (179
+churned), the Bronze-only model scored 0.570 PR-AUC and the general one 0.566, so one model for
+every tier stays. The general model's lead over the recency rule was its largest yet (0.566
+against 0.538), but its 95% interval still includes zero.
+
 ## Forward test
 
 A test set that has been looked at several times is no longer quite fresh, so the models also
@@ -238,6 +246,13 @@ uv run lolret status  -c configs/collect.yaml         # progress, from another t
 
 Stop with Ctrl+C at any time and re-run the same command to resume. Exit codes: `0` done,
 `1` key rejected, `2` some requests still failing (re-run to retry them), `130` interrupted.
+
+**Judge the Bronze expansion** (after `build` on both `collect.yaml` and `collect-bronze.yaml`;
+no API calls, about 3 minutes):
+
+```bash
+uv run lolret train-bronze -c configs/train.yaml   # -> data/models/bronze/evaluation.json
+```
 
 **Export the snapshot for the site** (after `train`; no API calls):
 

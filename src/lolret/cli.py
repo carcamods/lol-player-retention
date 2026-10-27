@@ -8,7 +8,7 @@ from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 
@@ -435,6 +435,46 @@ def train_candidates(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
         hi,
         RESULTS_FILE,
     )
+
+
+@app.command("train-bronze")
+def train_bronze(config: TrainConfigOption = DEFAULT_TRAIN_CONFIG) -> None:
+    """Judge the Bronze expansion by ADR 0015's rule, on the fresh Bronze test players.
+
+    A Bronze-only LightGBM against the general one, then the kept model against the recency
+    rule. Needs `lolret build` on both runs (configs/collect.yaml, configs/collect-bronze.yaml).
+    """
+    from lolret.model.bronze import RESULTS_FILE, RUN, evaluate_bronze
+
+    settings = get_settings()
+    cfg = load_train_config(config)
+    try:
+        summary = evaluate_bronze(cfg, settings.data_dir)
+    except FileNotFoundError as exc:
+        log.error("%s", exc)
+        raise typer.Exit(1) from None
+    rule = summary["rule"]
+    log.info("Fresh Bronze test players: %d, %d churned.", rule["examples"], rule["churned"])
+    for name, r in rule["test"].items():
+        log.info("%-12s PR-AUC %.3f  ROC-AUC %.3f", name, r["pr_auc"], r["roc_auc"])
+
+    def diff(label: str, c: dict[str, Any]) -> None:
+        lo, hi = c["pr_auc_diff_ci"] or (float("nan"), float("nan"))
+        log.info("%s: %+.3f PR-AUC (95%% CI %+.3f to %+.3f)", label, c["pr_auc_diff"], lo, hi)
+
+    diff("bronze_only - general", rule["bronze_only_vs_general"])
+    log.info(
+        "Rule 1: %s.",
+        "Bronze gets its own model" if rule["bronze_gets_own_model"] else "the general model stays",
+    )
+    kept = rule["kept"]
+    diff(f"{kept} - recency", rule["vs_recency"][kept])
+    log.info(
+        "Rule 2: %s %s the recency rule.",
+        kept,
+        "beats" if rule["kept_beats_recency"] else "doesn't beat",
+    )
+    log.info("Details, EUW alone and the learning curve in data/models/%s/%s", RUN, RESULTS_FILE)
 
 
 @forward_app.command("predict-candidates")
