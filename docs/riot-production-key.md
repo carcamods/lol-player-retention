@@ -6,7 +6,8 @@ second and 100 per 2 minutes, per region. A production key starts at 500 request
 and 30,000 per 10 minutes. Riot asks for a working product, a detailed description, compliance
 with its policies, and a secured key; review time varies.
 
-Submit it once the site is live, so the reviewers can see the product.
+**Status: not submitted.** On 2026-10-27 the owner decided not to apply and to keep collecting
+on the current key (ADR 0016). The draft stays in case that changes.
 
 ## Product name
 

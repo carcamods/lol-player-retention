@@ -70,4 +70,4 @@ stays private until launch, and a private link would show reviewers a 404.
 |---|---|
 | Development | Active (regenerate daily from the dashboard) |
 | Personal | Not yet submitted |
-| Production | Not planned until FR7 |
+| Production | Not applying (ADR 0016); draft in `docs/riot-production-key.md` |
