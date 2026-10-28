@@ -68,6 +68,6 @@ stays private until launch, and a private link would show reviewers a 404.
 
 | Key | Status |
 |---|---|
-| Development | Active (regenerate daily from the dashboard) |
-| Personal | Not yet submitted |
+| Development | Not used: the personal key replaced it |
+| Personal | Active: `RIOT_API_KEY` in `.env`, used for all collection (confirmed 2026-10-28) |
 | Production | Not applying (ADR 0016); draft in `docs/riot-production-key.md` |
