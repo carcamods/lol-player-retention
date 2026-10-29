@@ -134,10 +134,10 @@ of waiting, and launch doesn't wait for it.
 
 ## Phase 6: later
 
-- [ ] Apply for a Riot production key with `docs/riot-production-key.md`, once the site is
-      live. *Matias*
+- [x] Decide on a Riot production key: no application; collection stays on the current key
+      (2026-10-27, ADR 0016). The draft stays in `docs/riot-production-key.md`. *Matias*
 - [ ] Choose the next data round from the Bronze and forward-test results (milestone M5), with
       an ADR and a rule set before collecting. Candidates: each player's rank recorded at every
       future cutoff; a history longer than 8 weeks. (The EUW-focused expansion dropped out: it
       depended on a Bronze-only win, ADR 0015.) *Matias decides*
-- [ ] Live lookup API (FR7).
+- [ ] Live lookup API (FR7). Deferred: it needs a production key (ADR 0016).

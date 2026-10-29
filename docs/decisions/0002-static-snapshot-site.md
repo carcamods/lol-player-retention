@@ -1,6 +1,7 @@
 # 0002: Public demo as a static snapshot site
 
-**Status:** Accepted, 2026-10-22
+**Status:** Accepted, 2026-10-22. Production-key plan dropped by [0016](0016-no-production-key.md):
+no application, so no live lookup (FR7) for now.
 
 ## Context
 

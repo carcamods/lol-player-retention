@@ -2,6 +2,19 @@
 
 Notable changes, newest first. Each entry says what changed and why.
 
+## [2026-10-27] No production key
+
+### Added
+- ADR 0016: the owner won't apply for a Riot production key. Collection stays on the current
+  key (20 requests per second and 100 per 2 minutes, per region), as for `v1` and `bronze`.
+
+### Changed
+- Milestone M3 is dropped, and the live lookup API (FR7) is deferred with no date, since it
+  needs a production key. ADR 0002's index row and status note that its production-key plan
+  no longer holds; the rest of it stands.
+- `docs/riot-production-key.md` is marked as not submitted and kept as a draft in case the
+  decision changes.
+
 ## [2026-10-27] Bronze expansion judged: one model stays
 
 ### Added

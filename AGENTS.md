@@ -38,9 +38,11 @@ changing code in that folder. Read what the task needs, not the whole repo.
 - **Tried inside training, didn't help (2026-10-26):** separate models per tier, region or
   role, region or role as inputs, four blended features. Numbers in `src/lolret/model/AGENTS.md`.
   Tier as an input helped slightly but is measured after the outcomes, so it can't be used yet.
-- **Next:** the milestones in `docs/requirements.md#milestones`: M3 production key (owner), M4
-  score the forward test after 2026-11-19, M5 choose the next data round (rank at every
-  cutoff, or a longer history). The checklist has every task.
+- **No production key (ADR 0016, 2026-10-27):** the owner won't apply. Collection stays on the
+  current key's limits, M3 is dropped and the live lookup (FR7) is deferred.
+- **Next:** the milestones in `docs/requirements.md#milestones`: M4 score the forward test after
+  2026-11-19, then M5 choose the next data round (rank at every cutoff, or a longer history).
+  The checklist has every task.
 
 ## Where things live (read on demand)
 

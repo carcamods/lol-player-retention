@@ -6,7 +6,7 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | ADR | Decision | Status |
 |---|---|---|
 | [0001](0001-new-repo-fresh-history.md) | Start a new repo with a fresh history; the 2024 repo leaked credentials | Accepted |
-| [0002](0002-static-snapshot-site.md) | Public demo is a static snapshot site; live lookup only via CLI or a later production key | Accepted |
+| [0002](0002-static-snapshot-site.md) | Public demo is a static snapshot site; live lookup only via CLI or a later production key | Accepted; production-key plan dropped by 0016 |
 | [0003](0003-point-in-time-labels.md) | Point-in-time features and labels; the 2024 leak explained | Accepted |
 | [0004](0004-neural-nets-on-colab.md) | Neural nets (MLP, GRU) in PyTorch, trained on Colab; keep Python 3.12 support | Accepted |
 | [0005](0005-collection-design.md) | Collection: ladder sampling, weekly buckets, SQLite cache, failure policy; pilot results | Accepted |
@@ -20,6 +20,7 @@ a new ADR, and the old one is marked superseded. Read the index, then only the A
 | [0013](0013-candidate-features.md) | Five candidate features (break history, account level, repeated teammates) kept apart and judged by the forward test | Accepted |
 | [0014](0014-snapshot-export.md) | Snapshot export: held-out players numbered by a throwaway salt; published with the weekly timeline as is | Accepted |
 | [0015](0015-bronze-expansion.md) | Bronze expansion: 4,704 more Bronze players on top of v1, and the rule (Bronze-only model against the general one) set before collecting | Accepted; rule not met, the general model stays (2026-10-27) |
+| [0016](0016-no-production-key.md) | No production-key application: collection stays on the current key, M3 dropped, the live lookup (FR7) deferred | Accepted |
 
 ## Template
 
